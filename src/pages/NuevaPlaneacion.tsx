@@ -51,11 +51,14 @@ export default function NuevaPlaneacion() {
 
             <div className="relative flex-1 overflow-hidden">
                 {/* Blob de vidrio muy sutil, casi imperceptible, solo como acento */}
-                <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute -right-40 -top-40 h-96 w-96 rounded-full opacity-20 blur-3xl"
-                    style={{ background: "var(--cuali-blue-light)" }}
-                />
+                {/* Blobs de vidrio azules, sutiles, sobre el fondo blanco */}
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+                    <div className="content-blob content-blob-1" />
+                    <div className="content-blob content-blob-2" />
+                    <div className="content-blob content-blob-3" />
+                    <div className="content-blob content-blob-4" />
+                    <div className="content-blob content-blob-5" />
+                </div>
 
                 <div className="relative mx-auto max-w-3xl px-12 py-14">
                     <p className="mb-1 text-xl text-cuali-blue">❦</p>
@@ -154,6 +157,19 @@ export default function NuevaPlaneacion() {
                     </div>
                 </div>
             </div>
+
+            <style>{`
+                .content-blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(75px);
+}
+.content-blob-1 { width: 340px; height: 340px; top: -120px; right: -60px; background: var(--blue-light); opacity: 0.45; }
+.content-blob-2 { width: 260px; height: 260px; top: 28%; right: 12%; background: var(--lavender); opacity: 0.3; }
+.content-blob-3 { width: 300px; height: 300px; bottom: -100px; left: 5%; background: var(--blue-light); opacity: 0.4; }
+.content-blob-4 { width: 220px; height: 220px; top: 55%; left: -60px; background: var(--sage); opacity: 0.25; }
+.content-blob-5 { width: 260px; height: 260px; bottom: 10%; right: -80px; background: var(--blue-light); opacity: 0.35; }
+            `}</style>
         </div>
     );
 }

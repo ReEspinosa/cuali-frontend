@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MessageCircle, NotebookPen, BookOpen, Users } from "lucide-react";
+import Sidebar from "../components/Sidebar";
 
 /**
  * Cuali — Inicio
@@ -56,10 +57,14 @@ export default function Dashboard() {
 
     return (
         <div
-            className={`relative min-h-screen overflow-hidden font-sans transition-colors duration-700 ${
+            className={`relative flex min-h-screen overflow-hidden font-sans transition-colors duration-700 ${
                 isHome ? "bg-linen" : "bg-cuali-blue-dark"
             }`}
         >
+            <div className={`transition-opacity duration-700 ${isHome ? "opacity-100" : "pointer-events-none opacity-0"}`}>
+                <Sidebar />
+            </div>
+
             {/* Blobs liquid glass — se desvanecen al pasar a "home" */}
             <div
                 className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${

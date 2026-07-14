@@ -1,156 +1,91 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { MessageCircle, NotebookPen, BookOpen, Users } from "lucide-react";
-import Sidebar from "../components/Sidebar";
+import { useNavigate, useLocation } from "react-router-dom";
 
-const QUICK_ACCESS = [
-    {
-        id: "chat",
-        label: "Chatbot",
-        note: "Habla con Cuali",
-        icon: MessageCircle,
-        to: "/chat",
-    },
-    {
-        id: "planeacion",
-        label: "Planeaciones",
-        note: "6 activas",
-        icon: NotebookPen,
-        to: "/planeacion/nueva",
-    },
-    {
-        id: "recursos",
-        label: "Recursos",
-        note: "128 disponibles",
-        icon: BookOpen,
-        to: "/recursos",
-    },
-    {
-        id: "comunidad",
-        label: "Comunidad",
-        note: "12 publicaciones nuevas",
-        icon: Users,
-        to: "/comunidad",
-    },
+const MODULES = [
+    { id: "dashboard", label: "Dashboard", icon: "◆", color: "var(--cuali-blue-light)", to: "/dashboard" },
+    { id: "chat", label: "Chat con Cuali", icon: "✳", color: "var(--cuali-blue-light)", to: "/chat" },
+    { id: "planeacion", label: "Nueva Planeación", icon: "✎", color: "var(--sage)", to: "/planeacion/nueva" },
+    { id: "biblioteca", label: "Mi Biblioteca", icon: "▤", color: "var(--amber, #D9A441)", to: "/biblioteca" },
+    { id: "comunidad", label: "Comunidad", icon: "❁", color: "var(--coral, #E1604C)", to: "/comunidad" },
+    { id: "materiales", label: "Mis Materiales", icon: "▧", color: "var(--rose, #C98A96)", to: "/materiales" },
+    { id: "recursos", label: "Recursos", icon: "◈", color: "var(--berry, #6B2737)", to: "/recursos" },
+    { id: "diapositivas", label: "Diapositivas", icon: "▥", color: "var(--berry-light, #9C5D6B)", to: "/diapositivas" },
 ];
 
-export default function Dashboard() {
+export default function Sidebar() {
     const navigate = useNavigate();
-    const [phase, setPhase] = useState<"intro" | "home">("intro");
-
-    useEffect(() => {
-        const t = setTimeout(() => setPhase("home"), 1500);
-        return () => clearTimeout(t);
-    }, []);
-
-    const isHome = phase === "home";
+    const location = useLocation();
 
     return (
-        <div
-            className={`relative flex min-h-screen overflow-hidden font-sans transition-colors duration-700 ${
-                isHome ? "bg-linen" : "bg-cuali-blue-dark"
-            }`}
-        >
-            {/* Sidebar — solo aparece una vez que termina la intro */}
-            <div
-                className={`transition-opacity duration-700 ${
-                    isHome ? "opacity-100" : "pointer-events-none opacity-0"
-                }`}
-            >
-                <Sidebar />
+        <aside className="relative flex w-72 flex-shrink-0 flex-col overflow-hidden bg-cuali-blue-dark px-5 py-7">
+            {/* Blobs liquid glass — igual que en el login, contenidos dentro del sidebar */}
+            <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+                <div className="sidebar-blob sidebar-blob-blue" />
+                <div className="sidebar-blob sidebar-blob-lavender" />
+                <div className="sidebar-blob sidebar-blob-sage" />
             </div>
 
-            <div className="relative flex-1">
-                {/* Blobs liquid glass — se desvanecen al pasar a "home" */}
-                <div
-                    className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${
-                        isHome ? "opacity-0" : "opacity-100"
-                    }`}
-                >
-                    <div className="glass-blob glass-blob-blue" />
-                    <div className="glass-blob glass-blob-lavender" />
-                    <div className="glass-blob glass-blob-sage" />
+            <div className="relative z-10 mb-9 flex items-center gap-2 px-2">
+                <span className="text-xl text-cuali-blue-light">❦</span>
+                <span className="font-serif text-xl font-semibold text-linen">Cuali</span>
+            </div>
+
+            <nav className="relative z-10 flex flex-1 flex-col gap-1">
+                {MODULES.map((m) => {
+                    const isActive = location.pathname.startsWith(m.to);
+                    return (
+                        <button
+                            key={m.id}
+                            onClick={() => navigate(m.to)}
+                            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium backdrop-blur-sm transition ${
+                                isActive
+                                    ? "bg-white/14 text-linen shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+                                    : "text-linen/65 hover:bg-white/8 hover:text-linen"
+                            }`}
+                        >
+              <span className="w-4 text-center text-sm" style={{ color: m.color }}>
+                {m.icon}
+              </span>
+                            {m.label}
+                        </button>
+                    );
+                })}
+            </nav>
+
+            <div className="relative z-10 flex items-center gap-2 border-t border-white/10 px-2 pt-4">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cuali-blue-light text-xs font-semibold text-cuali-blue-dark">
+                    MR
                 </div>
-
-                {/* Título "Cuali.ai" — centrado en intro, header pequeño en home */}
-                <div
-                    className={`absolute z-20 flex items-center gap-2 transition-all duration-700 ease-out ${
-                        isHome
-                            ? "left-10 top-8 scale-100"
-                            : "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 scale-100"
-                    }`}
-                >
-          <span className={`transition-all duration-700 ${isHome ? "text-lg text-cuali-blue" : "text-4xl text-white"}`}>
-            ❦
-          </span>
-                    <span
-                        className={`font-serif font-semibold transition-all duration-700 ${
-                            isHome ? "text-xl text-ink" : "text-6xl text-white"
-                        }`}
-                    >
-            Cuali.ai
-          </span>
-                </div>
-
-                {/* Contenido de inicio — entra después de la intro */}
-                <div
-                    className={`relative z-10 mx-auto max-w-5xl px-10 pt-28 transition-all duration-700 ${
-                        isHome ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-                    }`}
-                >
-                    <p className="text-sm uppercase tracking-wide text-ink-soft">Martes 14 de julio</p>
-                    <h1 className="mt-2 font-serif text-3xl font-semibold text-ink">
-                        ¿Qué quieres hacer hoy, Mtra. Rosa?
-                    </h1>
-
-                    <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2">
-                        {QUICK_ACCESS.map((item) => {
-                            const Icon = item.icon;
-                            return (
-                                <button
-                                    key={item.id}
-                                    onClick={() => navigate(item.to)}
-                                    className="flex items-center gap-4 rounded-2xl border border-black/5 bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                                >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-cuali-blue-soft text-cuali-blue-dark">
-                    <Icon size={22} />
-                  </span>
-                                    <span>
-                    <span className="block font-serif text-lg font-semibold text-ink">{item.label}</span>
-                    <span className="block text-sm text-ink-soft">{item.note}</span>
-                  </span>
-                                </button>
-                            );
-                        })}
-                    </div>
+                <div>
+                    <div className="text-sm font-semibold text-linen">Mtra. Rosa</div>
+                    <div className="text-xs text-linen/60">3° Primaria</div>
                 </div>
             </div>
 
             <style>{`
-        .glass-blob {
+        .sidebar-blob {
           position: absolute;
           border-radius: 9999px;
-          filter: blur(90px);
+          filter: blur(70px);
         }
-        .glass-blob-blue {
-          width: 480px; height: 480px;
-          top: -120px; left: 10%;
+        .sidebar-blob-blue {
+          width: 320px; height: 320px;
+          top: -100px; left: -60px;
           background: var(--blue-light);
-          opacity: 0.55;
+          opacity: 0.5;
         }
-        .glass-blob-lavender {
-          width: 420px; height: 420px;
-          bottom: -100px; right: 5%;
+        .sidebar-blob-lavender {
+          width: 280px; height: 280px;
+          bottom: 20%; right: -100px;
           background: var(--lavender);
-          opacity: 0.45;
+          opacity: 0.4;
         }
-        .glass-blob-sage {
-          width: 360px; height: 360px;
-          bottom: 10%; left: 25%;
+        .sidebar-blob-sage {
+          width: 240px; height: 240px;
+          bottom: -80px; left: 10%;
           background: var(--sage);
           opacity: 0.3;
         }
       `}</style>
-        </div>
+        </aside>
     );
 }
