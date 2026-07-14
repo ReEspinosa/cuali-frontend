@@ -1,4 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { getUser } from "../lib/api";
+import { useState } from "react";
+import PerfilModal from "./PerfilModal";
 
 const MODULES = [
     { id: "dashboard", label: "Dashboard", icon: "◆", color: "var(--cuali-blue-light)", to: "/dashboard" },
@@ -11,13 +14,18 @@ const MODULES = [
     { id: "diapositivas", label: "Diapositivas", icon: "▥", color: "var(--berry-light, #9C5D6B)", to: "/diapositivas" },
 ];
 
+
 export default function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
+    const user = getUser();
+    const [perfilAbierto, setPerfilAbierto] = useState(false);
+
+    const displayName = user ? `${user.nombre} ${user.apellido}` : "Docente";
+    const initials = user ? `${user.nombre[0] ?? ""}${user.apellido[0] ?? ""}`.toUpperCase() : "??";
 
     return (
-        <aside className="relative flex w-72 flex-shrink-0 flex-col overflow-hidden bg-cuali-blue-dark px-5 py-7">
-            {/* Blobs liquid glass — igual que en el login, contenidos dentro del sidebar */}
+        <aside className="relative flex min-h-screen w-72 flex-shrink-0 flex-col overflow-hidden bg-cuali-blue-dark px-5 py-7">
             <div className="pointer-events-none absolute inset-0" aria-hidden="true">
                 <div className="sidebar-blob sidebar-blob-blue" />
                 <div className="sidebar-blob sidebar-blob-lavender" />
@@ -51,40 +59,26 @@ export default function Sidebar() {
                 })}
             </nav>
 
-            <div className="relative z-10 flex items-center gap-2 border-t border-white/10 px-2 pt-4">
+            <button
+                onClick={() => setPerfilAbierto(true)}
+                className="relative z-10 flex items-center gap-2 border-t border-white/10 px-2 pt-4 text-left transition hover:opacity-80"
+            >
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cuali-blue-light text-xs font-semibold text-cuali-blue-dark">
-                    MR
+                    {initials}
                 </div>
                 <div>
-                    <div className="text-sm font-semibold text-linen">Mtra. Rosa</div>
-                    <div className="text-xs text-linen/60">3° Primaria</div>
+                    <div className="text-sm font-semibold text-linen">{displayName}</div>
+                    <div className="text-xs text-linen/60">Cuenta docente</div>
                 </div>
-            </div>
+            </button>
+
+            {perfilAbierto && <PerfilModal onClose={() => setPerfilAbierto(false)} />}
 
             <style>{`
-        .sidebar-blob {
-          position: absolute;
-          border-radius: 9999px;
-          filter: blur(70px);
-        }
-        .sidebar-blob-blue {
-          width: 320px; height: 320px;
-          top: -100px; left: -60px;
-          background: var(--blue-light);
-          opacity: 0.5;
-        }
-        .sidebar-blob-lavender {
-          width: 280px; height: 280px;
-          bottom: 20%; right: -100px;
-          background: var(--lavender);
-          opacity: 0.4;
-        }
-        .sidebar-blob-sage {
-          width: 240px; height: 240px;
-          bottom: -80px; left: 10%;
-          background: var(--sage);
-          opacity: 0.3;
-        }
+        .sidebar-blob { position: absolute; border-radius: 9999px; filter: blur(70px); }
+        .sidebar-blob-blue { width: 320px; height: 320px; top: -100px; left: -60px; background: var(--blue-light); opacity: 0.5; }
+        .sidebar-blob-lavender { width: 280px; height: 280px; bottom: 20%; right: -100px; background: var(--lavender); opacity: 0.4; }
+        .sidebar-blob-sage { width: 240px; height: 240px; bottom: -80px; left: 10%; background: var(--sage); opacity: 0.3; }
       `}</style>
         </aside>
     );

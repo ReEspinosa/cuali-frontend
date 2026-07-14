@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useState, useMemo } from "react"; // ya lo tienes, solo confirma que sigue igual
+import { api } from "../lib/api";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import ContentAutocomplete from "../components/ContentAutocomplete";
@@ -25,6 +26,8 @@ export default function NuevaPlaneacion() {
     const [grupo, setGrupo] = useState("");
     const [sesiones, setSesiones] = useState("");
     const [tema, setTema] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [creando, setCreando] = useState(false);
 
     const contenidosDelCampo = useMemo<Contenido[]>(() => {
         const campoData = catalogoFase5.campos_formativos.find(
@@ -38,9 +41,28 @@ export default function NuevaPlaneacion() {
         setContenido(null);
     }
 
-    function handleContinuar() {
-        console.log({ grado, campo, contenido, grupo, sesiones, tema });
-        navigate("/chat", { state: { grado, campo, contenido, grupo, sesiones, tema } });
+    async function handleContinuar() {
+        if (!contenido) return;
+        setError(null);
+        setCreando(true);
+
+        try {
+            const planeacion = await api.crearPlaneacion({
+                grado,
+                campo_formativo: campo,
+                contenido: contenido.contenido,
+                pda: contenido.pda_6,
+                grupo,
+                sesiones: parseInt(sesiones, 10),
+                tema,
+            });
+
+            navigate(`/planeacion/${planeacion.id}/chat`);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "No se pudo crear la planeación.");
+        } finally {
+            setCreando(false);
+        }
     }
 
     const puedeContinuar = campo && contenido && grupo && sesiones && tema;
@@ -146,13 +168,15 @@ export default function NuevaPlaneacion() {
                             </label>
                         </div>
 
+                        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+
                         <button
                             type="button"
-                            disabled={!puedeContinuar}
+                            disabled={!puedeContinuar || creando}
                             onClick={handleContinuar}
-                            className="mt-8 w-full rounded-xl bg-cuali-blue py-3 text-sm font-semibold text-linen shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] transition hover:bg-cuali-blue-dark disabled:cursor-not-allowed disabled:opacity-40"
+                            className="mt-2 w-full rounded-xl bg-cuali-blue py-3 text-sm font-semibold text-linen shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] transition hover:bg-cuali-blue-dark disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                            Continuar al chat →
+                            {creando ? "Creando…" : "Continuar al chat →"}
                         </button>
                     </div>
                 </div>
