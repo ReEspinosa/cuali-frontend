@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* Cuali.ai — Design tokens
+   Paleta base: linen cálido + acento azul ("azulito").
+   Sage/lavender se usan solo en el blob de fondo tipo liquid glass. */
+
+:root {
+  --linen: #F7F1E6;
+  --linen-deep: #EDE3CD;
+  --ink: #2B2A24;
+  --ink-soft: #6B6558;
+
+  --blue: #4E7AB5;
+  --blue-dark: #3C5F91;
+  --blue-light: #A9C4E0;
+  --blue-soft: #E7EEF7;
+
+  --sage: #8FA383;
+  --lavender: #9B8FC7;
+}
+
+@theme inline {
+  --color-linen: var(--linen);
+  --color-linen-deep: var(--linen-deep);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+
+  --color-cuali-blue: var(--blue);
+  --color-cuali-blue-dark: var(--blue-dark);
+  --color-cuali-blue-light: var(--blue-light);
+  --color-cuali-blue-soft: var(--blue-soft);
+
+  --color-sage: var(--sage);
+  --color-lavender: var(--lavender);
+
+  --font-serif: "Literata", serif;
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+}
+
+body {
+  background: var(--linen);
+  color: var(--ink);
+}
