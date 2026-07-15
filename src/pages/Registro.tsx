@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import AuthLayout from "../components/AuthLayout";
+import PasswordInput from "../components/PasswordInput";
 
 const fieldClass =
     "rounded-xl border border-transparent bg-cuali-blue-soft px-4 py-3 text-sm outline-none placeholder:text-ink-soft focus:border-cuali-blue";
@@ -89,22 +90,14 @@ export default function Registro() {
 
                 <label className="flex flex-col gap-2">
                     <span className="text-sm font-medium">Contraseña</span>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className={fieldClass}
-                        minLength={8}
-                        required
-                    />
+                    <PasswordInput value={password} onChange={setPassword} className={fieldClass} minLength={8} required />
                 </label>
 
                 <label className="flex flex-col gap-2">
                     <span className="text-sm font-medium">Confirmar contraseña</span>
-                    <input
-                        type="password"
+                    <PasswordInput
                         value={passwordConfirm}
-                        onChange={(e) => setPasswordConfirm(e.target.value)}
+                        onChange={setPasswordConfirm}
                         className={fieldClass}
                         minLength={8}
                         required

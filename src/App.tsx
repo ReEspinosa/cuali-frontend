@@ -11,6 +11,8 @@ import Materiales from "./pages/Materiales";
 import Recursos from "./pages/Recursos";
 import Diapositivas from "./pages/Diapositivas";
 import ChatGeneral from "./pages/ChatGeneral";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 export default function App() {
     return (
@@ -18,6 +20,8 @@ export default function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Auth />} />
             <Route path="/registro" element={<Registro />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verificar" element={<VerificarCorreo />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/planeacion/nueva" element={<NuevaPlaneacion />} />

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api, setToken, setUser, ApiError } from "../lib/api";
 import AuthLayout from "../components/AuthLayout";
+import PasswordInput from "../components/PasswordInput";
 
 function GoogleIcon() {
   return (
@@ -75,15 +76,20 @@ export default function Auth() {
 
           <label className="flex flex-col gap-2">
             <span className="text-sm font-medium">Contraseña</span>
-            <input
-                type="password"
+            <PasswordInput
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={setPassword}
                 placeholder="Tu contraseña"
                 className="rounded-xl border border-transparent bg-cuali-blue-soft px-4 py-3 text-sm outline-none placeholder:text-ink-soft focus:border-cuali-blue"
                 required
             />
           </label>
+
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-sm text-cuali-blue-dark hover:underline">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
 
           <label className="flex items-center gap-2 text-sm">
             <input

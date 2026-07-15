@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { X, Pencil } from "lucide-react";
-import { api, setUser, type StoredUser } from "../lib/api";
+import { useNavigate } from "react-router-dom";
+import { X, Pencil, LogOut } from "lucide-react";
+import { api, setUser, clearToken, clearUser, type StoredUser } from "../lib/api";
+
 
 type Props = {
     onClose: () => void;
@@ -22,6 +24,7 @@ const GENEROS: Record<string, string> = {
 };
 
 export default function PerfilModal({ onClose }: Props) {
+    const navigate = useNavigate();
     const [perfil, setPerfil] = useState<StoredUser | null>(null);
     const [editando, setEditando] = useState(false);
     const [guardando, setGuardando] = useState(false);
@@ -83,6 +86,12 @@ export default function PerfilModal({ onClose }: Props) {
         if (perfil) cargarCampos(perfil);
         setEditando(false);
         setError(null);
+    }
+
+    function handleLogout() {
+        clearToken();
+        clearUser();
+        navigate("/login");
     }
 
     return (
@@ -247,6 +256,16 @@ export default function PerfilModal({ onClose }: Props) {
                                 </div>
                             </div>
                         )}
+
+                        <div className="mt-6 border-t border-black/5 pt-4">
+                            <button
+                                onClick={handleLogout}
+                                className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                            >
+                                <LogOut size={15} />
+                                Cerrar sesión
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
