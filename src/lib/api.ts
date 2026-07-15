@@ -16,6 +16,8 @@ export type StoredUser = {
     estado: string | null;
 };
 
+export type Adjunto = { url: string; filename: string; tipo: string };
+
 export function getToken() {
     return localStorage.getItem(TOKEN_KEY);
 }
@@ -123,8 +125,11 @@ export const api = {
 
     obtenerPlaneacion: (id: string) => request(`/planeaciones/${id}`),
 
-    enviarMensaje: (id: string, content: string) =>
-        request(`/planeaciones/${id}/mensajes`, { method: "POST", body: JSON.stringify({ content }) }),
+    enviarMensaje: (id: string, content: string, adjuntos: Adjunto[] = []) =>
+        request(`/planeaciones/${id}/mensajes`, { method: "POST", body: JSON.stringify({ content, adjuntos }) }),
+
+    enviarMensajeConversacion: (id: string, content: string, adjuntos: Adjunto[] = []) =>
+        request(`/conversaciones/${id}/mensajes`, { method: "POST", body: JSON.stringify({ content, adjuntos }) }),
 
     generarPlaneacion: (id: string) => request(`/planeaciones/${id}/generar`, { method: "POST" }),
 
@@ -150,4 +155,27 @@ export const api = {
         return res.blob();
     },
 
+    async subirArchivo(file: File): Promise<{ url: string; filename: string; tipo: string }> {
+        const token = getToken();
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch(`${API_BASE}/archivos`, {
+            method: "POST",
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+            body: formData,
+        });
+
+        if (!res.ok) throw new ApiError("No se pudo subir el archivo.", res.status);
+        return res.json();
+    },
+
+    crearConversacion: () => request("/conversaciones", { method: "POST" }),
+
+    listarConversaciones: () => request("/conversaciones"),
+
+    obtenerConversacion: (id: string) => request(`/conversaciones/${id}`),
+
+    enviarMensajeConversacion: (id: string, content: string) =>
+        request(`/conversaciones/${id}/mensajes`, { method: "POST", body: JSON.stringify({ content }) }),
 };

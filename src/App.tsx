@@ -10,6 +10,7 @@ import Comunidad from "./pages/Comunidad";
 import Materiales from "./pages/Materiales";
 import Recursos from "./pages/Recursos";
 import Diapositivas from "./pages/Diapositivas";
+import ChatGeneral from "./pages/ChatGeneral";
 
 export default function App() {
     return (
@@ -21,6 +22,8 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/planeacion/nueva" element={<NuevaPlaneacion />} />
             <Route path="/planeacion/:planeacionId/chat" element={<Chat />} />
+                <Route path="/chat" element={<ChatGeneral />} />
+                <Route path="/chat/:conversacionId" element={<ChatGeneral />} />
             <Route path="/biblioteca" element={<Biblioteca />} />
             <Route path="/comunidad" element={<Comunidad />} />
             <Route path="/materiales" element={<Materiales />} />

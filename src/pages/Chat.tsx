@@ -3,11 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowUp, FileDown } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import { api } from "../lib/api";
+import AttachmentInput from "../components/AttachmentInput";
+import type { Adjunto } from "../lib/api";
 
 type Mensaje = {
     id: string;
     role: "user" | "assistant";
     content: string;
+    adjuntos?: Adjunto[];
 };
 
 type PlaneacionDetalle = {
@@ -32,6 +35,7 @@ export default function Chat() {
     const [sending, setSending] = useState(false);
     const [generando, setGenerando] = useState(false);
     const [loadError, setLoadError] = useState<string | null>(null);
+    const [adjuntosPendientes, setAdjuntosPendientes] = useState<Adjunto[]>([]);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -55,15 +59,23 @@ export default function Chat() {
 
     async function handleSend() {
         const text = input.trim();
-        if (!text || sending || !planeacionId) return;
+        if ((!text && adjuntosPendientes.length === 0) || sending || !planeacionId) return;
 
-        const mensajeLocal: Mensaje = { id: crypto.randomUUID(), role: "user", content: text };
-        setMensajes((prev) => [...prev, mensajeLocal]);
+        const adjuntosAEnviar = adjuntosPendientes;
+        setAdjuntosPendientes([]);
         setInput("");
         setSending(true);
 
+        const mensajeLocal: Mensaje = {
+            id: crypto.randomUUID(),
+            role: "user",
+            content: text,
+            adjuntos: adjuntosAEnviar,
+        };
+        setMensajes((prev) => [...prev, mensajeLocal]);
+
         try {
-            const respuesta = await api.enviarMensaje(planeacionId, text);
+            const respuesta = await api.enviarMensaje(planeacionId, text, adjuntosAEnviar);
             setMensajes((prev) => [...prev, respuesta]);
         } catch (err) {
             setMensajes((prev) => [
@@ -173,6 +185,24 @@ export default function Chat() {
                                             : "border border-black/5 bg-white text-ink shadow-sm"
                                     }`}
                                 >
+                                    {m.adjuntos && m.adjuntos.length > 0 && (
+                                        <div className="mb-2 flex flex-wrap gap-2">
+                                            {m.adjuntos.map((a, i) =>
+                                                    a.tipo === "imagen" ? (
+                                                        <img
+                                                            key={i}
+                                                            src={`http://localhost:8000${a.url}`}
+                                                            alt={a.filename}
+                                                            className="h-24 w-24 rounded-lg object-cover"
+                                                        />
+                                                    ) : (
+                                                        <span key={i} className="rounded-lg bg-black/10 px-2 py-1 text-xs">
+                            {a.filename}
+                          </span>
+                                                    )
+                                            )}
+                                        </div>
+                                    )}
                                     {m.content}
                                 </div>
                             </div>
@@ -190,6 +220,7 @@ export default function Chat() {
 
                 <div className="relative z-10 px-10 pb-8">
                     <div className="mx-auto flex max-w-3xl items-center gap-3 rounded-full border border-cuali-blue-light/50 bg-cuali-blue-soft/70 px-6 py-4 shadow-lg backdrop-blur-xl">
+                        <AttachmentInput adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
                         <input
                             type="text"
                             value={input}
@@ -200,7 +231,7 @@ export default function Chat() {
                         />
                         <button
                             onClick={handleSend}
-                            disabled={!input.trim() || sending}
+                            disabled={(!input.trim() && adjuntosPendientes.length === 0) || sending}
                             className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-cuali-blue-dark text-white transition disabled:opacity-40"
                         >
                             <ArrowUp size={16} />
