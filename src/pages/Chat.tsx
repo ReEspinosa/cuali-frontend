@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Sidebar from "../components/Sidebar";
 import { api } from "../lib/api";
-import AttachmentInput from "../components/AttachmentInput";
+import AttachmentInput, { AttachmentPreview } from "../components/AttachmentInput";
 import type { Adjunto } from "../lib/api";
 
 type Mensaje = {
@@ -241,23 +241,37 @@ export default function Chat() {
                 </div>
 
                 <div className="relative z-10 px-10 pb-8">
-                    <div className="mx-auto flex max-w-3xl items-center gap-3 rounded-full border border-cuali-blue-light/50 bg-cuali-blue-soft/70 px-6 py-4 shadow-lg backdrop-blur-xl">
-                        <AttachmentInput adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
-                        <input
-                            type="text"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                            placeholder="Escribe tu mensaje…"
-                            className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-soft"
-                        />
-                        <button
-                            onClick={handleSend}
-                            disabled={(!input.trim() && adjuntosPendientes.length === 0) || sending}
-                            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-cuali-blue-dark text-white transition disabled:opacity-40"
-                        >
-                            <ArrowUp size={16} />
-                        </button>
+                    <div className="mx-auto max-w-3xl">
+                        <AttachmentPreview adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
+                        <div className="flex items-end gap-3 rounded-3xl border border-cuali-blue-light/50 bg-cuali-blue-soft/70 px-6 py-4 shadow-lg backdrop-blur-xl">
+                            <AttachmentInput adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
+                            <textarea
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSend();
+                                    }
+                                }}
+                                placeholder="Escribe tu mensaje…"
+                                rows={1}
+                                style={{ maxHeight: "200px" }}
+                                onInput={(e) => {
+                                    const el = e.currentTarget;
+                                    el.style.height = "auto";
+                                    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+                                }}
+                                className="flex-1 resize-none bg-transparent py-1.5 text-sm text-ink outline-none placeholder:text-ink-soft"
+                            />
+                            <button
+                                onClick={handleSend}
+                                disabled={(!input.trim() && adjuntosPendientes.length === 0) || sending}
+                                className="flex h-9 w-9 flex-shrink-0 items-center justify-center self-end rounded-full bg-cuali-blue-dark text-white transition disabled:opacity-40"
+                            >
+                                <ArrowUp size={16} />
+                            </button>
+                        </div>
                     </div>
                 </div>
 

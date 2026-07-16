@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { X, Pencil, LogOut } from "lucide-react";
 import { api, setUser, clearToken, clearUser, type StoredUser } from "../lib/api";
@@ -94,7 +95,7 @@ export default function PerfilModal({ onClose }: Props) {
         navigate("/login");
     }
 
-    return (
+    return createPortal(
         <div
             className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-cuali-blue-dark/95 px-6 py-10"
             onClick={onClose}
@@ -301,6 +302,7 @@ export default function PerfilModal({ onClose }: Props) {
         .card-blob-white-4 { width: 50px; height: 50px; top: 20%; right: 10%; }
         .card-blob-white-5 { width: 75px; height: 75px; bottom: 25%; left: 42%; }
       `}</style>
-        </div>
+        </div>,
+        document.body
     );
 }

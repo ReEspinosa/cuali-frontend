@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowUp, Search, SquarePen, BookOpen, Code2, Lightbulb, Image as ImageIcon } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import Sidebar from "../components/Sidebar";
 import { api, getUser } from "../lib/api";
-import AttachmentInput from "../components/AttachmentInput";
+import AttachmentInput, { AttachmentPreview } from "../components/AttachmentInput";
 import type { Adjunto } from "../lib/api";
 
 type Source = { documento: string; campo?: string; pagina?: number };
@@ -103,7 +105,7 @@ export default function ChatGeneral() {
     const enConversacion = mensajes.length > 0;
 
     return (
-        <div className="flex h-screen overflow-hidden bg-white font-sans text-ink">
+        <div className="fixed inset-0 flex overflow-hidden bg-white font-sans text-ink">
             <Sidebar />
 
             {/* Panel de conversaciones — como el sidebar de Discourse */}
@@ -155,6 +157,10 @@ export default function ChatGeneral() {
                     <div className="content-blob content-blob-3" />
                     <div className="content-blob content-blob-4" />
                     <div className="content-blob content-blob-5" />
+                    <div className="content-blob content-blob-6" />
+                    <div className="content-blob content-blob-7" />
+                    <div className="content-blob content-blob-8" />
+                    <div className="content-blob content-blob-9" />
                 </div>
 
                 {!enConversacion ? (
@@ -168,20 +174,32 @@ export default function ChatGeneral() {
                         </p>
 
                         <div className="w-full max-w-2xl">
-                            <div className="flex items-center gap-3 rounded-full border border-cuali-blue-light/50 bg-cuali-blue-soft/70 px-6 py-4 shadow-lg backdrop-blur-xl">
+                            <AttachmentPreview adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
+                            <div className="flex items-end gap-3 rounded-3xl border border-cuali-blue-light/50 bg-cuali-blue-soft/70 px-6 py-4 shadow-lg backdrop-blur-xl">
                                 <AttachmentInput adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
-                                <input
-                                    type="text"
+                                <textarea
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleSend();
+                                        }
+                                    }}
                                     placeholder="Pregunta lo que sea…"
-                                    className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-soft"
+                                    rows={1}
+                                    style={{ maxHeight: "200px" }}
+                                    onInput={(e) => {
+                                        const el = e.currentTarget;
+                                        el.style.height = "auto";
+                                        el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+                                    }}
+                                    className="flex-1 resize-none bg-transparent py-1.5 text-sm text-ink outline-none placeholder:text-ink-soft"
                                 />
                                 <button
                                     onClick={() => handleSend()}
                                     disabled={(!input.trim() && adjuntosPendientes.length === 0) || sending}
-                                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-cuali-blue-dark text-white transition disabled:opacity-40"
+                                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center self-end rounded-full bg-cuali-blue-dark text-white transition disabled:opacity-40"
                                 >
                                     <ArrowUp size={16} />
                                 </button>
@@ -235,7 +253,13 @@ export default function ChatGeneral() {
                                                         )}
                                                     </div>
                                                 )}
-                                                {m.content}
+                                                {m.role === "assistant" ? (
+                                                    <div className="chat-markdown">
+                                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                                                    </div>
+                                                ) : (
+                                                    m.content
+                                                )}
                                             </div>
 
                                             {m.sources && m.sources.length > 0 && (
@@ -267,35 +291,63 @@ export default function ChatGeneral() {
                         </div>
 
                         <div className="relative z-10 px-10 pb-8">
-                            <div className="mx-auto flex max-w-3xl items-center gap-3 rounded-full border border-cuali-blue-light/50 bg-cuali-blue-soft/70 px-6 py-4 shadow-lg backdrop-blur-xl">
-                                <AttachmentInput adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
-                                <input
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                                    placeholder="Escribe tu mensaje…"
-                                    className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-soft"
-                                />
-                                <button
-                                    onClick={() => handleSend()}
-                                    disabled={(!input.trim() && adjuntosPendientes.length === 0) || sending}
-                                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-cuali-blue-dark text-white transition disabled:opacity-40"
-                                >
-                                    <ArrowUp size={16} />
-                                </button>
+                            <div className="mx-auto max-w-3xl">
+                                <AttachmentPreview adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
+                                <div className="flex items-end gap-3 rounded-3xl border border-cuali-blue-light/50 bg-cuali-blue-soft/70 px-6 py-4 shadow-lg backdrop-blur-xl">
+                                    <AttachmentInput adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
+                                    <textarea
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter" && !e.shiftKey) {
+                                                e.preventDefault();
+                                                handleSend();
+                                            }
+                                        }}
+                                        placeholder="Escribe tu mensaje…"
+                                        rows={1}
+                                        style={{ maxHeight: "200px" }}
+                                        onInput={(e) => {
+                                            const el = e.currentTarget;
+                                            el.style.height = "auto";
+                                            el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+                                        }}
+                                        className="flex-1 resize-none bg-transparent py-1.5 text-sm text-ink outline-none placeholder:text-ink-soft"
+                                    />
+                                    <button
+                                        onClick={() => handleSend()}
+                                        disabled={(!input.trim() && adjuntosPendientes.length === 0) || sending}
+                                        className="flex h-9 w-9 flex-shrink-0 items-center justify-center self-end rounded-full bg-cuali-blue-dark text-white transition disabled:opacity-40"
+                                    >
+                                        <ArrowUp size={16} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </>
                 )}
 
                 <style>{`
-          .content-blob { position: absolute; border-radius: 9999px; filter: blur(75px); }
-          .content-blob-1 { width: 340px; height: 340px; top: -120px; right: -60px; background: var(--blue-light); opacity: 0.35; }
-          .content-blob-2 { width: 260px; height: 260px; top: 28%; right: 12%; background: var(--lavender); opacity: 0.2; }
-          .content-blob-3 { width: 300px; height: 300px; bottom: -100px; left: 5%; background: var(--blue-light); opacity: 0.3; }
-          .content-blob-4 { width: 220px; height: 220px; top: 55%; left: -60px; background: var(--sage); opacity: 0.18; }
-          .content-blob-5 { width: 260px; height: 260px; bottom: 10%; right: -80px; background: var(--blue-light); opacity: 0.25; }
+          .content-blob { position: absolute; border-radius: 9999px; filter: blur(60px); }
+          .content-blob-1 { width: 400px; height: 400px; top: -120px; right: -60px; background: var(--blue); opacity: 0.45; }
+          .content-blob-2 { width: 320px; height: 320px; top: 22%; right: 8%; background: var(--blue-light); opacity: 0.85; }
+          .content-blob-3 { width: 360px; height: 360px; bottom: -100px; left: 4%; background: var(--blue); opacity: 0.4; }
+          .content-blob-4 { width: 280px; height: 280px; top: 50%; left: -60px; background: var(--blue-light); opacity: 0.8; }
+          .content-blob-5 { width: 320px; height: 320px; bottom: 6%; right: -80px; background: var(--blue); opacity: 0.4; }
+          .content-blob-6 { width: 250px; height: 250px; top: 8%; left: 20%; background: var(--blue-light); opacity: 0.75; }
+          .content-blob-7 { width: 260px; height: 260px; bottom: 28%; left: 42%; background: var(--blue-light); opacity: 0.7; }
+          .content-blob-8 { width: 220px; height: 220px; top: 38%; right: 30%; background: var(--blue); opacity: 0.3; }
+          .content-blob-9 { width: 240px; height: 240px; bottom: 45%; left: 15%; background: var(--blue-light); opacity: 0.65; }
+
+          .chat-markdown p { margin: 0 0 0.6em 0; }
+          .chat-markdown p:last-child { margin-bottom: 0; }
+          .chat-markdown ul, .chat-markdown ol { margin: 0.4em 0 0.6em 1.2em; padding: 0; }
+          .chat-markdown li { margin-bottom: 0.25em; }
+          .chat-markdown strong { font-weight: 600; }
+          .chat-markdown table { border-collapse: collapse; margin: 0.6em 0; width: 100%; font-size: 0.85em; }
+          .chat-markdown th, .chat-markdown td { border: 1px solid rgba(0,0,0,0.15); padding: 6px 8px; text-align: left; vertical-align: top; }
+          .chat-markdown th { background: rgba(60,95,145,0.10); font-weight: 600; }
+          .chat-markdown h1, .chat-markdown h2, .chat-markdown h3 { font-size: 1em; font-weight: 600; margin: 0.6em 0 0.3em 0; }
         `}</style>
             </div>
         </div>

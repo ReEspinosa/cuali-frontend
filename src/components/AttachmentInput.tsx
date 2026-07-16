@@ -7,6 +7,35 @@ type Props = {
     onChange: (adjuntos: Adjunto[]) => void;
 };
 
+export function AttachmentPreview({ adjuntos, onChange }: Props) {
+    if (adjuntos.length === 0) return null;
+
+    function quitar(index: number) {
+        onChange(adjuntos.filter((_, i) => i !== index));
+    }
+
+    return (
+        <div className="mb-2 flex flex-wrap gap-2 px-2">
+            {adjuntos.map((a, i) => (
+                <div
+                    key={i}
+                    className="flex items-center gap-2 rounded-lg border border-cuali-blue-light/50 bg-cuali-blue-soft px-3 py-1.5 text-xs text-ink"
+                >
+                    {a.tipo === "imagen" ? (
+                        <img src={a.url} alt={a.filename} className="h-6 w-6 rounded object-cover" />
+                    ) : (
+                        <FileText size={14} />
+                    )}
+                    <span className="max-w-[180px] truncate">{a.filename}</span>
+                    <button onClick={() => quitar(i)} className="text-ink-soft hover:text-ink">
+                        <X size={12} />
+                    </button>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 export default function AttachmentInput({ adjuntos, onChange }: Props) {
     const inputRef = useRef<HTMLInputElement>(null);
     const [subiendo, setSubiendo] = useState(false);
@@ -25,33 +54,8 @@ export default function AttachmentInput({ adjuntos, onChange }: Props) {
         }
     }
 
-    function quitar(index: number) {
-        onChange(adjuntos.filter((_, i) => i !== index));
-    }
-
     return (
-        <div className="flex flex-col gap-2">
-            {adjuntos.length > 0 && (
-                <div className="flex flex-wrap gap-2 px-2">
-                    {adjuntos.map((a, i) => (
-                        <div
-                            key={i}
-                            className="flex items-center gap-2 rounded-lg border border-cuali-blue-light/50 bg-cuali-blue-soft px-3 py-1.5 text-xs text-ink"
-                        >
-                            {a.tipo === "imagen" ? (
-                                <img src={a.url} alt={a.filename} className="h-6 w-6 rounded object-cover" />
-                            ) : (
-                                <FileText size={14} />
-                            )}
-                            <span className="max-w-[140px] truncate">{a.filename}</span>
-                            <button onClick={() => quitar(i)} className="text-ink-soft hover:text-ink">
-                                <X size={12} />
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            )}
-
+        <>
             <input
                 ref={inputRef}
                 type="file"
@@ -65,11 +69,11 @@ export default function AttachmentInput({ adjuntos, onChange }: Props) {
                 type="button"
                 onClick={() => inputRef.current?.click()}
                 disabled={subiendo}
-                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-ink-soft transition hover:bg-cuali-blue-soft hover:text-ink disabled:opacity-50"
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center self-end rounded-full text-ink-soft transition hover:bg-cuali-blue-soft hover:text-ink disabled:opacity-50"
                 title="Adjuntar archivo o imagen"
             >
                 <Paperclip size={16} />
             </button>
-        </div>
+        </>
     );
 }

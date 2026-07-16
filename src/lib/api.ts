@@ -16,7 +16,7 @@ export type StoredUser = {
     estado: string | null;
 };
 
-export type Adjunto = { url: string; filename: string; tipo: string };
+export type Adjunto = { url: string; filename: string; tipo: string; texto_extraido?: string | null };
 
 export function getToken() {
     return localStorage.getItem(TOKEN_KEY);
@@ -161,7 +161,7 @@ export const api = {
         return res.blob();
     },
 
-    async subirArchivo(file: File): Promise<{ url: string; filename: string; tipo: string }> {
+    async subirArchivo(file: File): Promise<Adjunto> {
         const token = getToken();
         const formData = new FormData();
         formData.append("file", file);
@@ -181,7 +181,4 @@ export const api = {
     listarConversaciones: () => request("/conversaciones"),
 
     obtenerConversacion: (id: string) => request(`/conversaciones/${id}`),
-
-    enviarMensajeConversacion: (id: string, content: string) =>
-        request(`/conversaciones/${id}/mensajes`, { method: "POST", body: JSON.stringify({ content }) }),
 };
