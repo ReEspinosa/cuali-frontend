@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowUp, FileDown } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import Sidebar from "../components/Sidebar";
 import { api } from "../lib/api";
 import AttachmentInput from "../components/AttachmentInput";
@@ -124,7 +126,7 @@ export default function Chat() {
 
     if (loadError) {
         return (
-            <div className="flex min-h-screen bg-white font-sans text-ink">
+            <div className="fixed inset-0 flex overflow-hidden bg-white font-sans text-ink">
                 <Sidebar />
                 <div className="flex flex-1 items-center justify-center">
                     <p className="text-sm text-red-600">{loadError}</p>
@@ -135,7 +137,7 @@ export default function Chat() {
 
     if (!planeacion) {
         return (
-            <div className="flex min-h-screen bg-white font-sans text-ink">
+            <div className="fixed inset-0 flex overflow-hidden bg-white font-sans text-ink">
                 <Sidebar />
                 <div className="flex flex-1 items-center justify-center text-sm text-ink-soft">Cargando…</div>
             </div>
@@ -143,7 +145,7 @@ export default function Chat() {
     }
 
     return (
-        <div className="flex min-h-screen bg-white font-sans text-ink">
+        <div className="fixed inset-0 flex overflow-hidden bg-white font-sans text-ink">
             <Sidebar />
 
             <div className="relative flex flex-1 flex-col overflow-hidden">
@@ -153,6 +155,10 @@ export default function Chat() {
                     <div className="content-blob content-blob-3" />
                     <div className="content-blob content-blob-4" />
                     <div className="content-blob content-blob-5" />
+                    <div className="content-blob content-blob-6" />
+                    <div className="content-blob content-blob-7" />
+                    <div className="content-blob content-blob-8" />
+                    <div className="content-blob content-blob-9" />
                 </div>
 
                 <div className="relative z-10 border-b border-black/5 bg-white/70 px-10 py-5 backdrop-blur-md">
@@ -178,7 +184,7 @@ export default function Chat() {
                     </div>
                 </div>
 
-                <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto px-10 py-8">
+                <div ref={scrollRef} className="relative z-10 min-h-0 flex-1 overflow-y-auto px-10 py-8">
                     <div className="mx-auto flex max-w-3xl flex-col gap-5">
                         {mensajes.length === 0 && (
                             <div className="rounded-2xl border border-black/5 bg-white px-5 py-4 text-sm text-ink-soft shadow-sm">
@@ -213,7 +219,13 @@ export default function Chat() {
                                             )}
                                         </div>
                                     )}
-                                    {m.content}
+                                    {m.role === "assistant" ? (
+                                        <div className="chat-markdown">
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                                        </div>
+                                    ) : (
+                                        m.content
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -250,12 +262,26 @@ export default function Chat() {
                 </div>
 
                 <style>{`
-          .content-blob { position: absolute; border-radius: 9999px; filter: blur(75px); }
-          .content-blob-1 { width: 340px; height: 340px; top: -120px; right: -60px; background: var(--blue-light); opacity: 0.4; }
-          .content-blob-2 { width: 260px; height: 260px; top: 28%; right: 12%; background: var(--lavender); opacity: 0.25; }
-          .content-blob-3 { width: 300px; height: 300px; bottom: -100px; left: 5%; background: var(--blue-light); opacity: 0.35; }
-          .content-blob-4 { width: 220px; height: 220px; top: 55%; left: -60px; background: var(--sage); opacity: 0.2; }
-          .content-blob-5 { width: 260px; height: 260px; bottom: 10%; right: -80px; background: var(--blue-light); opacity: 0.3; }
+          .content-blob { position: absolute; border-radius: 9999px; filter: blur(60px); }
+          .content-blob-1 { width: 400px; height: 400px; top: -120px; right: -60px; background: var(--blue); opacity: 0.45; }
+          .content-blob-2 { width: 320px; height: 320px; top: 22%; right: 8%; background: var(--blue-light); opacity: 0.85; }
+          .content-blob-3 { width: 360px; height: 360px; bottom: -100px; left: 4%; background: var(--blue); opacity: 0.4; }
+          .content-blob-4 { width: 280px; height: 280px; top: 50%; left: -60px; background: var(--blue-light); opacity: 0.8; }
+          .content-blob-5 { width: 320px; height: 320px; bottom: 6%; right: -80px; background: var(--blue); opacity: 0.4; }
+          .content-blob-6 { width: 250px; height: 250px; top: 8%; left: 20%; background: var(--blue-light); opacity: 0.75; }
+          .content-blob-7 { width: 260px; height: 260px; bottom: 28%; left: 42%; background: var(--blue-light); opacity: 0.7; }
+          .content-blob-8 { width: 220px; height: 220px; top: 38%; right: 30%; background: var(--blue); opacity: 0.3; }
+          .content-blob-9 { width: 240px; height: 240px; bottom: 45%; left: 15%; background: var(--blue-light); opacity: 0.65; }
+
+          .chat-markdown p { margin: 0 0 0.6em 0; }
+          .chat-markdown p:last-child { margin-bottom: 0; }
+          .chat-markdown ul, .chat-markdown ol { margin: 0.4em 0 0.6em 1.2em; padding: 0; }
+          .chat-markdown li { margin-bottom: 0.25em; }
+          .chat-markdown strong { font-weight: 600; }
+          .chat-markdown table { border-collapse: collapse; margin: 0.6em 0; width: 100%; font-size: 0.85em; }
+          .chat-markdown th, .chat-markdown td { border: 1px solid rgba(0,0,0,0.15); padding: 6px 8px; text-align: left; vertical-align: top; }
+          .chat-markdown th { background: rgba(60,95,145,0.10); font-weight: 600; }
+          .chat-markdown h1, .chat-markdown h2, .chat-markdown h3 { font-size: 1em; font-weight: 600; margin: 0.6em 0 0.3em 0; }
         `}</style>
             </div>
         </div>

@@ -33,7 +33,7 @@ export default function Sidebar() {
 
     return (
         <aside
-            className={`relative flex min-h-screen flex-shrink-0 flex-col overflow-hidden bg-cuali-blue-dark transition-all duration-300 ${
+            className={`sticky top-0 relative flex h-screen flex-shrink-0 flex-col overflow-hidden bg-cuali-blue-dark transition-all duration-300 ${
                 collapsed ? "w-20 px-2 py-7" : "w-72 px-5 py-7"
             }`}
         >

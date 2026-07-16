@@ -103,7 +103,7 @@ export default function ChatGeneral() {
     const enConversacion = mensajes.length > 0;
 
     return (
-        <div className="flex min-h-screen bg-white font-sans text-ink">
+        <div className="flex h-screen overflow-hidden bg-white font-sans text-ink">
             <Sidebar />
 
             {/* Panel de conversaciones — como el sidebar de Discourse */}
@@ -205,7 +205,7 @@ export default function ChatGeneral() {
                     </div>
                 ) : (
                     <>
-                        <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto px-10 py-8">
+                        <div ref={scrollRef} className="relative z-10 min-h-0 flex-1 overflow-y-auto px-10 py-8">
                             <div className="mx-auto flex max-w-3xl flex-col gap-5">
                                 {mensajes.map((m) => (
                                     <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>

@@ -57,6 +57,15 @@ export default function NuevaPlaneacion() {
                 tema,
             });
 
+            // El resumen del formulario se manda como primer mensaje del chat,
+            // para que Cuali dé la bienvenida y arranque el flujo de preguntas.
+            const primerMensaje =
+                `Hola Cuali, quiero planear una clase de ${campo} para mi grupo de ` +
+                `${grado}° "${grupo}", con ${sesiones} sesión(es). ` +
+                `El contenido es: ${contenido.contenido}. ` +
+                `Lo que tengo en mente: ${tema}`;
+            await api.enviarMensaje(planeacion.id, primerMensaje);
+
             navigate(`/planeacion/${planeacion.id}/chat`);
         } catch (err) {
             setError(err instanceof Error ? err.message : "No se pudo crear la planeación.");
