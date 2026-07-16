@@ -5,14 +5,13 @@ import { getUser } from "../lib/api";
 import PerfilModal from "./PerfilModal";
 
 const MODULES = [
-    { id: "dashboard", label: "Dashboard", icon: "◆", color: "var(--cuali-blue-light)", to: "/dashboard" },
-    { id: "chat", label: "Chat con Cuali", icon: "✳", color: "var(--cuali-blue-light)", to: "/chat" },
-    { id: "planeacion", label: "Nueva Planeación", icon: "✎", color: "var(--sage)", to: "/planeacion/nueva" },
-    { id: "biblioteca", label: "Mi Biblioteca", icon: "▤", color: "var(--amber, #D9A441)", to: "/biblioteca" },
-    { id: "comunidad", label: "Comunidad", icon: "❁", color: "var(--coral, #E1604C)", to: "/comunidad" },
-    { id: "materiales", label: "Mis Materiales", icon: "▧", color: "var(--rose, #C98A96)", to: "/materiales" },
-    { id: "recursos", label: "Recursos", icon: "◈", color: "var(--berry, #6B2737)", to: "/recursos" },
-    { id: "diapositivas", label: "Diapositivas", icon: "▥", color: "var(--berry-light, #9C5D6B)", to: "/diapositivas" },
+    { id: "dashboard", label: "Dashboard", icon: "◆", color: "#FFFFFF", to: "/dashboard" },
+    { id: "chat", label: "Chat con Cuali", icon: "✳", color: "#FFFFFF", to: "/chat" },
+    { id: "planeacion", label: "Nueva Planeación", icon: "✎", color: "#FFFFFF", to: "/planeacion/nueva" },
+    { id: "recursos", label: "Recursos", icon: "◈", color: "#FFFFFF", to: "/recursos" },
+    { id: "comunidad", label: "Comunidad", icon: "❁", color: "#FFFFFF", to: "/comunidad" },
+    { id: "biblioteca", label: "Mi Biblioteca", icon: "▤", color: "#FFFFFF", to: "/biblioteca" },
+    { id: "materiales", label: "Mis Materiales", icon: "▧", color: "#FFFFFF", to: "/materiales" },
 ];
 
 const COLLAPSE_KEY = "cuali_sidebar_collapsed";
@@ -46,12 +45,12 @@ export default function Sidebar() {
             {/* Logo + botón de colapsar */}
             <div className={`relative z-10 mb-9 flex items-center ${collapsed ? "flex-col gap-3" : "justify-between px-2"}`}>
                 <div className="flex items-center gap-2">
-                    <span className="text-xl text-cuali-blue-light">❦</span>
+                    <span className="text-xl text-linen">❦</span>
                     {!collapsed && <span className="font-serif text-xl font-semibold text-linen">Cuali</span>}
                 </div>
                 <button
                     onClick={() => setCollapsed((c) => !c)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-linen/60 transition hover:bg-white/10 hover:text-linen"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-linen/85 transition hover:bg-white/10 hover:text-linen"
                     title={collapsed ? "Expandir menú" : "Colapsar menú"}
                 >
                     {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
@@ -71,7 +70,7 @@ export default function Sidebar() {
                             } ${
                                 isActive
                                     ? "bg-white/14 text-linen shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
-                                    : "text-linen/65 hover:bg-white/8 hover:text-linen"
+                                    : "text-linen/90 hover:bg-white/8 hover:text-linen"
                             }`}
                         >
               <span className="w-4 flex-shrink-0 text-center text-sm" style={{ color: m.color }}>
@@ -96,7 +95,7 @@ export default function Sidebar() {
                 {!collapsed && (
                     <div>
                         <div className="text-sm font-semibold text-linen">{displayName}</div>
-                        <div className="text-xs text-linen/60">Cuenta docente</div>
+                        <div className="text-xs text-linen/85">Cuenta docente</div>
                     </div>
                 )}
             </button>

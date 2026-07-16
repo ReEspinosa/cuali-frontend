@@ -9,7 +9,12 @@ import Biblioteca from "./pages/Biblioteca";
 import Comunidad from "./pages/Comunidad";
 import Materiales from "./pages/Materiales";
 import Recursos from "./pages/Recursos";
-import Diapositivas from "./pages/Diapositivas";
+import RecursoDiapositivas from "./pages/recursos/Diapositivas";
+import RecursoCuestionarios from "./pages/recursos/Cuestionarios";
+import RecursoMapasMentales from "./pages/recursos/MapasMentales";
+import RecursoJuegos from "./pages/recursos/Juegos";
+import RecursoCarteles from "./pages/recursos/Carteles";
+import RecursoLaboratorio from "./pages/recursos/Laboratorio";
 import ChatGeneral from "./pages/ChatGeneral";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -26,13 +31,18 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/planeacion/nueva" element={<NuevaPlaneacion />} />
             <Route path="/planeacion/:planeacionId/chat" element={<Chat />} />
-                <Route path="/chat" element={<ChatGeneral />} />
-                <Route path="/chat/:conversacionId" element={<ChatGeneral />} />
+            <Route path="/chat" element={<ChatGeneral />} />
+            <Route path="/chat/:conversacionId" element={<ChatGeneral />} />
             <Route path="/biblioteca" element={<Biblioteca />} />
             <Route path="/comunidad" element={<Comunidad />} />
             <Route path="/materiales" element={<Materiales />} />
             <Route path="/recursos" element={<Recursos />} />
-            <Route path="/diapositivas" element={<Diapositivas />} />
+            <Route path="/recursos/diapositivas" element={<RecursoDiapositivas />} />
+            <Route path="/recursos/cuestionarios" element={<RecursoCuestionarios />} />
+            <Route path="/recursos/mapas-mentales" element={<RecursoMapasMentales />} />
+            <Route path="/recursos/juegos" element={<RecursoJuegos />} />
+            <Route path="/recursos/carteles" element={<RecursoCarteles />} />
+            <Route path="/recursos/laboratorio" element={<RecursoLaboratorio />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
     );

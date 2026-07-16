@@ -181,4 +181,49 @@ export const api = {
     listarConversaciones: () => request("/conversaciones"),
 
     obtenerConversacion: (id: string) => request(`/conversaciones/${id}`),
+
+    generarDiapositivas: (payload: {
+        titulo: string;
+        descripcion: string;
+        tema_color: string;
+        num_diapositivas: number;
+        texto_adjunto?: string;
+    }) => request("/recursos/diapositivas", { method: "POST", body: JSON.stringify(payload) }),
+
+    async descargarPptxBlob(id: string): Promise<Blob> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE}/recursos/diapositivas/${id}/pptx`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) throw new ApiError("No se pudo descargar la presentación.", res.status);
+        return res.blob();
+    },
+
+    generarCuestionario: (payload: {
+        titulo: string;
+        descripcion: string;
+        tipo_preguntas: string;
+        num_preguntas: number;
+        texto_adjunto?: string;
+    }) => request("/recursos/cuestionarios", { method: "POST", body: JSON.stringify(payload) }),
+
+    ajustarCuestionario: (
+        id: string,
+        payload: {
+            titulo: string;
+            tipo_preguntas: string;
+            num_preguntas: number;
+            preguntas_actuales: unknown[];
+            instrucciones: string;
+        }
+    ) => request(`/recursos/cuestionarios/${id}/ajustar`, { method: "POST", body: JSON.stringify(payload) }),
+
+    async descargarCuestionarioDocxBlob(id: string): Promise<Blob> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE}/recursos/cuestionarios/${id}/docx`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) throw new ApiError("No se pudo descargar el cuestionario.", res.status);
+        return res.blob();
+    },
 };

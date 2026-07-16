@@ -68,7 +68,7 @@ export default function ChatGeneral() {
         setSending(true);
 
         try {
-            let idActivo = conversacionId;
+            let idActivo: string = conversacionId ?? "";
             if (!idActivo) {
                 const nueva = await api.crearConversacion();
                 idActivo = nueva.id;
