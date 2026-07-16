@@ -152,12 +152,12 @@ export const api = {
         estado?: string;
     }) => request("/auth/me", { method: "PUT", body: JSON.stringify(payload) }),
 
-    async descargarPdfBlob(id: string): Promise<Blob> {
+    async descargarDocxBlob(id: string): Promise<Blob> {
         const token = getToken();
-        const res = await fetch(`${API_BASE}/planeaciones/${id}/pdf`, {
+        const res = await fetch(`${API_BASE}/planeaciones/${id}/docx`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-        if (!res.ok) throw new ApiError("No se pudo descargar el PDF.", res.status);
+        if (!res.ok) throw new ApiError("No se pudo descargar el documento.", res.status);
         return res.blob();
     },
 

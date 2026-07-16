@@ -91,20 +91,32 @@ export default function Chat() {
         }
     }
 
+    const MIN_MENSAJES_PARA_GENERAR = 5;
+
     async function handleGenerarPlaneacion() {
         if (!planeacionId) return;
+
+        const mensajesDelMaestro = mensajes.filter((m) => m.role === "user").length;
+        if (mensajesDelMaestro < MIN_MENSAJES_PARA_GENERAR) {
+            alert(
+                "Aún no hay información suficiente para generar la planeación. " +
+                "Sigue platicando con Cuali un poco más y vuelve a intentarlo."
+            );
+            return;
+        }
+
         setGenerando(true);
         try {
             await api.generarPlaneacion(planeacionId);
-            const blob = await api.descargarPdfBlob(planeacionId);
+            const blob = await api.descargarDocxBlob(planeacionId);
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `planeacion_${planeacionId}.pdf`;
+            a.download = `planeacion_${planeacionId}.docx`;
             a.click();
             URL.revokeObjectURL(url);
         } catch (err) {
-            alert(err instanceof Error ? err.message : "No se pudo generar el PDF.");
+            alert(err instanceof Error ? err.message : "No se pudo generar el documento.");
         } finally {
             setGenerando(false);
         }
@@ -129,8 +141,6 @@ export default function Chat() {
             </div>
         );
     }
-
-    const puedeGenerar = mensajes.some((m) => m.role === "user");
 
     return (
         <div className="flex min-h-screen bg-white font-sans text-ink">
@@ -159,7 +169,7 @@ export default function Chat() {
                         </div>
                         <button
                             onClick={handleGenerarPlaneacion}
-                            disabled={!puedeGenerar || generando}
+                            disabled={generando}
                             className="flex items-center gap-2 whitespace-nowrap rounded-xl bg-cuali-blue px-4 py-2.5 text-sm font-semibold text-linen shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] transition hover:bg-cuali-blue-dark disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             <FileDown size={16} />
