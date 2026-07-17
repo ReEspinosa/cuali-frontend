@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+export const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 const TOKEN_KEY = "cuali_token";
 const USER_KEY = "cuali_user";
@@ -226,4 +226,70 @@ export const api = {
         if (!res.ok) throw new ApiError("No se pudo descargar el cuestionario.", res.status);
         return res.blob();
     },
+
+    generarMapaMental: (payload: { tema: string; resumen: string; texto_adjunto?: string }) =>
+        request("/recursos/mapas-mentales", { method: "POST", body: JSON.stringify(payload) }),
+
+    generarMemorama: (payload: { tema: string; num_pares: number; texto_adjunto?: string }) =>
+        request("/recursos/juegos/memorama", { method: "POST", body: JSON.stringify(payload) }),
+
+    generarSopaDeLetras: (payload: { tema: string; num_palabras: number; texto_adjunto?: string }) =>
+        request("/recursos/juegos/sopa-de-letras", { method: "POST", body: JSON.stringify(payload) }),
+
+    generarRuleta: (payload: { tema: string; num_preguntas: number; texto_adjunto?: string }) =>
+        request("/recursos/juegos/ruleta", { method: "POST", body: JSON.stringify(payload) }),
+
+    generarCrucigrama: (payload: { tema: string; num_palabras: number; texto_adjunto?: string }) =>
+        request("/recursos/juegos/crucigrama", { method: "POST", body: JSON.stringify(payload) }),
+
+    generarAhorcado: (payload: { tema: string; num_palabras: number; texto_adjunto?: string }) =>
+        request("/recursos/juegos/ahorcado", { method: "POST", body: JSON.stringify(payload) }),
+
+    generarVerdaderoFalso: (payload: { tema: string; num_afirmaciones: number; texto_adjunto?: string }) =>
+        request("/recursos/juegos/verdadero-falso", { method: "POST", body: JSON.stringify(payload) }),
+
+    generarCartel: (payload: { tema: string; descripcion: string; tema_color: string; texto_adjunto?: string }) =>
+        request("/recursos/carteles", { method: "POST", body: JSON.stringify(payload) }),
+
+    laboratorioMensaje: (payload: { historial: { role: string; content: string }[]; mensaje: string }) =>
+        request("/recursos/laboratorio/mensaje", { method: "POST", body: JSON.stringify(payload) }),
+
+    laboratorioGenerar: (payload: { historial: { role: string; content: string }[] }) =>
+        request("/recursos/laboratorio/generar", { method: "POST", body: JSON.stringify(payload) }),
+
+    async descargarLaboratorioDocxBlob(id: string): Promise<Blob> {
+        const token = getToken();
+        const res = await fetch(`${API_BASE}/recursos/laboratorio/${id}/docx`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) throw new ApiError("No se pudo descargar el documento.", res.status);
+        return res.blob();
+    },
+
+    listarPublicaciones: (params: { busqueda?: string; categoria?: string; alcance?: string }) => {
+        const qs = new URLSearchParams();
+        if (params.busqueda) qs.set("busqueda", params.busqueda);
+        if (params.categoria) qs.set("categoria", params.categoria);
+        if (params.alcance) qs.set("alcance", params.alcance);
+        return request(`/comunidad/publicaciones?${qs.toString()}`);
+    },
+
+    crearPublicacion: (payload: { contenido: string; categoria?: string | null; visibilidad: string; imagenes: string[] }) =>
+        request("/comunidad/publicaciones", { method: "POST", body: JSON.stringify(payload) }),
+
+    editarPublicacion: (
+        id: string,
+        payload: Partial<{ contenido: string; categoria: string | null; visibilidad: string; imagenes: string[] }>
+    ) => request(`/comunidad/publicaciones/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+
+    borrarPublicacion: (id: string) => request(`/comunidad/publicaciones/${id}`, { method: "DELETE" }),
+
+    toggleLike: (id: string) => request(`/comunidad/publicaciones/${id}/like`, { method: "POST" }),
+
+    listarComentarios: (publicacionId: string) => request(`/comunidad/publicaciones/${publicacionId}/comentarios`),
+
+    crearComentario: (publicacionId: string, payload: { contenido: string; parent_id?: string | null }) =>
+        request(`/comunidad/publicaciones/${publicacionId}/comentarios`, { method: "POST", body: JSON.stringify(payload) }),
+
+    borrarComentario: (id: string) => request(`/comunidad/comentarios/${id}`, { method: "DELETE" }),
 };
