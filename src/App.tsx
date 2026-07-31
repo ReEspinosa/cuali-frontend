@@ -24,38 +24,43 @@ import RecursoLaboratorio from "./pages/recursos/Laboratorio";
 import ChatGeneral from "./pages/ChatGeneral";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
         return (
             <Routes>
-                    <Route path="/" element={<Navigate to="/login" replace />} />
-                    <Route path="/login" element={<Auth />} />
-                    <Route path="/registro" element={<Registro />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/verificar" element={<VerificarCorreo />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/planeacion/nueva" element={<NuevaPlaneacion />} />
-                    <Route path="/planeacion/:planeacionId/chat" element={<Chat />} />
-                    <Route path="/chat" element={<ChatGeneral />} />
-                    <Route path="/chat/:conversacionId" element={<ChatGeneral />} />
-                    <Route path="/biblioteca" element={<Biblioteca />} />
-                    <Route path="/comunidad" element={<Comunidad />} />
-                    <Route path="/materiales" element={<Materiales />} />
-                    <Route path="/recursos" element={<Recursos />} />
-                    <Route path="/recursos/diapositivas" element={<RecursoDiapositivas />} />
-                    <Route path="/recursos/cuestionarios" element={<RecursoCuestionarios />} />
-                    <Route path="/recursos/mapas-mentales" element={<RecursoMapasMentales />} />
-                    <Route path="/recursos/juegos" element={<RecursoJuegos />} />
-                    <Route path="/recursos/juegos/memorama" element={<JuegoMemorama />} />
-                    <Route path="/recursos/juegos/sopa-de-letras" element={<JuegoSopaDeLetras />} />
-                    <Route path="/recursos/juegos/crucigrama" element={<JuegoCrucigrama />} />
-                    <Route path="/recursos/juegos/ruleta" element={<JuegoRuleta />} />
-                    <Route path="/recursos/juegos/ahorcado" element={<JuegoAhorcado />} />
-                    <Route path="/recursos/juegos/verdadero-falso" element={<JuegoVerdaderoFalso />} />
-                    <Route path="/recursos/carteles" element={<RecursoCarteles />} />
-                    <Route path="/recursos/laboratorio" element={<RecursoLaboratorio />} />
-                    <Route path="*" element={<Navigate to="/login" replace />} />
+                {/* Públicas */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/login" element={<Auth />} />
+                <Route path="/registro" element={<Registro />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/verificar" element={<VerificarCorreo />} />
+
+                {/* Privadas — requieren sesión */}
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/planeacion/nueva" element={<ProtectedRoute><NuevaPlaneacion /></ProtectedRoute>} />
+                <Route path="/planeacion/:planeacionId/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+                <Route path="/chat" element={<ProtectedRoute><ChatGeneral /></ProtectedRoute>} />
+                <Route path="/chat/:conversacionId" element={<ProtectedRoute><ChatGeneral /></ProtectedRoute>} />
+                <Route path="/biblioteca" element={<ProtectedRoute><Biblioteca /></ProtectedRoute>} />
+                <Route path="/comunidad" element={<ProtectedRoute><Comunidad /></ProtectedRoute>} />
+                <Route path="/materiales" element={<ProtectedRoute><Materiales /></ProtectedRoute>} />
+                <Route path="/recursos" element={<ProtectedRoute><Recursos /></ProtectedRoute>} />
+                <Route path="/recursos/diapositivas" element={<ProtectedRoute><RecursoDiapositivas /></ProtectedRoute>} />
+                <Route path="/recursos/cuestionarios" element={<ProtectedRoute><RecursoCuestionarios /></ProtectedRoute>} />
+                <Route path="/recursos/mapas-mentales" element={<ProtectedRoute><RecursoMapasMentales /></ProtectedRoute>} />
+                <Route path="/recursos/juegos" element={<ProtectedRoute><RecursoJuegos /></ProtectedRoute>} />
+                <Route path="/recursos/juegos/memorama" element={<ProtectedRoute><JuegoMemorama /></ProtectedRoute>} />
+                <Route path="/recursos/juegos/sopa-de-letras" element={<ProtectedRoute><JuegoSopaDeLetras /></ProtectedRoute>} />
+                <Route path="/recursos/juegos/crucigrama" element={<ProtectedRoute><JuegoCrucigrama /></ProtectedRoute>} />
+                <Route path="/recursos/juegos/ruleta" element={<ProtectedRoute><JuegoRuleta /></ProtectedRoute>} />
+                <Route path="/recursos/juegos/ahorcado" element={<ProtectedRoute><JuegoAhorcado /></ProtectedRoute>} />
+                <Route path="/recursos/juegos/verdadero-falso" element={<ProtectedRoute><JuegoVerdaderoFalso /></ProtectedRoute>} />
+                <Route path="/recursos/carteles" element={<ProtectedRoute><RecursoCarteles /></ProtectedRoute>} />
+                <Route path="/recursos/laboratorio" element={<ProtectedRoute><RecursoLaboratorio /></ProtectedRoute>} />
+
+                <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
         );
 }
