@@ -229,7 +229,9 @@ export default function ChatGeneral() {
                                     <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                                         <div className="max-w-[75%]">
                                             <div
-                                                className={`whitespace-pre-wrap rounded-2xl px-5 py-3 text-sm leading-relaxed ${
+                                                className={`rounded-2xl px-5 py-3 text-sm leading-relaxed ${
+                                                    m.role === "assistant" ? "" : "whitespace-pre-wrap"
+                                                } ${
                                                     m.role === "user"
                                                         ? "bg-cuali-blue text-linen"
                                                         : "border border-black/5 bg-white text-ink shadow-sm"

@@ -41,3 +41,67 @@ body {
   background: var(--linen);
   color: var(--ink);
 }
+
+/* Estilos para las respuestas de Cuali renderizadas con Markdown (ReactMarkdown).
+   Sin esto, el navegador usa sus márgenes por default en headings/párrafos/listas,
+   que son muy generosos y dejan demasiado espacio en blanco dentro de una burbuja
+   de chat angosta. */
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3,
+.chat-markdown h4,
+.chat-markdown h5,
+.chat-markdown h6 {
+  margin: 0.9em 0 0.35em 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.chat-markdown h1:first-child,
+.chat-markdown h2:first-child,
+.chat-markdown h3:first-child,
+.chat-markdown h4:first-child {
+  margin-top: 0;
+}
+
+.chat-markdown p {
+  margin: 0 0 0.4em 0;
+  line-height: 1.45;
+}
+
+.chat-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-markdown ul,
+.chat-markdown ol {
+  margin: 0.3em 0 0.6em 0;
+  padding-left: 1.3em;
+}
+
+.chat-markdown li {
+  margin-bottom: 0.25em;
+  line-height: 1.45;
+}
+
+.chat-markdown li > ul,
+.chat-markdown li > ol {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+.chat-markdown strong {
+  color: var(--ink);
+}
+
+.chat-markdown table {
+  margin: 0.5em 0;
+  border-collapse: collapse;
+}
+
+.chat-markdown th,
+.chat-markdown td {
+  padding: 0.4em 0.6em;
+  border: 1px solid var(--linen-deep);
+}
