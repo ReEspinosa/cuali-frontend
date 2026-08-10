@@ -1,7 +1,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --include=dev
+RUN npm ci --include=dev && echo "--- BIN CONTENT ---" && ls -la node_modules/.bin/ | grep -i ts
 COPY . .
 RUN npm run build
 
