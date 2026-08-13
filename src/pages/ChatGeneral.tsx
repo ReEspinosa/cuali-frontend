@@ -35,6 +35,7 @@ export default function ChatGeneral() {
     const [mensajes, setMensajes] = useState<Mensaje[]>([]);
     const [input, setInput] = useState("");
     const [sending, setSending] = useState(false);
+    const [adjuntosPendientes, setAdjuntosPendientes] = useState<Adjunto[]>([]);
     const [useRag, setUseRag] = useState(true);
     const scrollRef = useRef<HTMLDivElement>(null);
 
