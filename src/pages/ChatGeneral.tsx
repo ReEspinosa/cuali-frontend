@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowUp, Search, SquarePen, BookOpen, Code2, Lightbulb, Image as ImageIcon } from "lucide-react";
+import { ArrowUp, Search, SquarePen, BookOpen, Code2, Lightbulb, Image as ImageIcon, BookMarked } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Sidebar from "../components/Sidebar";
@@ -35,7 +35,7 @@ export default function ChatGeneral() {
     const [mensajes, setMensajes] = useState<Mensaje[]>([]);
     const [input, setInput] = useState("");
     const [sending, setSending] = useState(false);
-    const [adjuntosPendientes, setAdjuntosPendientes] = useState<Adjunto[]>([]);
+    const [useRag, setUseRag] = useState(true);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -83,7 +83,7 @@ export default function ChatGeneral() {
             };
             setMensajes((prev) => [...prev, mensajeLocal]);
 
-            const respuesta = await api.enviarMensajeConversacion(idActivo, text, adjuntosAEnviar);
+            const respuesta = await api.enviarMensajeConversacion(idActivo, text, adjuntosAEnviar, useRag);
             setMensajes((prev) => [...prev, respuesta]);
 
             const listaActualizada = await api.listarConversaciones();
@@ -177,6 +177,19 @@ export default function ChatGeneral() {
                             <AttachmentPreview adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
                             <div className="flex items-end gap-3 rounded-3xl border border-cuali-blue-light/50 bg-cuali-blue-soft/70 px-6 py-4 shadow-lg backdrop-blur-xl">
                                 <AttachmentInput adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
+                                <button
+                                    type="button"
+                                    onClick={() => setUseRag(!useRag)}
+                                    title={useRag ? "RAG activado (usando libros SEP)" : "RAG desactivado (respuesta general)"}
+                                    className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition ${
+                                        useRag
+                                            ? "bg-cuali-blue-dark text-white"
+                                            : "bg-black/5 text-ink-soft hover:bg-black/10"
+                                    }`}
+                                >
+                                    <BookMarked size={16} />
+                                </button>
+
                                 <textarea
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
@@ -297,6 +310,18 @@ export default function ChatGeneral() {
                                 <AttachmentPreview adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
                                 <div className="flex items-end gap-3 rounded-3xl border border-cuali-blue-light/50 bg-cuali-blue-soft/70 px-6 py-4 shadow-lg backdrop-blur-xl">
                                     <AttachmentInput adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
+                                    <button
+                                        type="button"
+                                        onClick={() => setUseRag(!useRag)}
+                                        title={useRag ? "RAG activado (usando libros SEP)" : "RAG desactivado (respuesta general)"}
+                                        className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition ${
+                                            useRag
+                                                ? "bg-cuali-blue-dark text-white"
+                                                : "bg-black/5 text-ink-soft hover:bg-black/10"
+                                        }`}
+                                    >
+                                        <BookMarked size={16} />
+                                    </button>
                                     <textarea
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}

@@ -128,8 +128,8 @@ export const api = {
     enviarMensaje: (id: string, content: string, adjuntos: Adjunto[] = []) =>
         request(`/planeaciones/${id}/mensajes`, { method: "POST", body: JSON.stringify({ content, adjuntos }) }),
 
-    enviarMensajeConversacion: (id: string, content: string, adjuntos: Adjunto[] = []) =>
-        request(`/conversaciones/${id}/mensajes`, { method: "POST", body: JSON.stringify({ content, adjuntos }) }),
+    enviarMensajeConversacion: (id: string, content: string, adjuntos: Adjunto[] = [], use_rag: boolean = true) =>
+        request(`/conversaciones/${id}/mensajes`, { method: "POST", body: JSON.stringify({ content, adjuntos, use_rag }) }),
 
     generarPlaneacion: (id: string) => request(`/planeaciones/${id}/generar`, { method: "POST" }),
 
