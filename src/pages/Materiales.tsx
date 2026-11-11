@@ -1,15 +1,22 @@
-import Sidebar from "../components/Sidebar";
+import { Link } from "react-router-dom";
+import PaginaCuaderno from "../components/PaginaCuaderno";
 
 export default function Materiales() {
     return (
-        <div className="flex min-h-screen bg-white font-sans text-ink">
-            <Sidebar />
-            <div className="flex flex-1 items-center justify-center">
-                <div className="text-center">
-                    <p className="mb-2 text-xl text-cuali-blue">❦</p>
-                    <h1 className="font-serif text-2xl font-semibold">Mis Materiales — próximamente</h1>
-                </div>
-            </div>
-        </div>
+        <PaginaCuaderno>
+            <h1 className="titulo-condensado text-5xl">
+                Mis <span className="marcatexto">materiales</span>
+            </h1>
+            <p className="mt-4 max-w-xl text-lg text-tinta-suave">
+                Aquí van a quedar guardados los recursos que generes con Cuali. Estamos terminando esta sección.
+            </p>
+            <p className="mt-6 text-tinta-suave">
+                Puedes crear uno desde{" "}
+                <Link to="/recursos" className="font-bold underline">
+                    Recursos
+                </Link>
+                .
+            </p>
+        </PaginaCuaderno>
     );
 }

@@ -4,6 +4,7 @@ import Registro from "./pages/Registro";
 import VerificarCorreo from "./pages/VerificarCorreo";
 import Dashboard from "./pages/Dashboard";
 import NuevaPlaneacion from "./pages/NuevaPlaneacion";
+import MisPlaneaciones from "./pages/MisPlaneaciones";
 import Chat from "./pages/Chat";
 import Biblioteca from "./pages/Biblioteca";
 import Comunidad from "./pages/Comunidad";
@@ -24,6 +25,7 @@ import RecursoLaboratorio from "./pages/recursos/Laboratorio";
 import ChatGeneral from "./pages/ChatGeneral";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import PlaneacionDocumento from "./pages/PlaneacionDocumento";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
@@ -39,7 +41,9 @@ export default function App() {
 
                 {/* Privadas — requieren sesión */}
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/planeaciones" element={<ProtectedRoute><MisPlaneaciones /></ProtectedRoute>} />
                 <Route path="/planeacion/nueva" element={<ProtectedRoute><NuevaPlaneacion /></ProtectedRoute>} />
+                <Route path="/planeacion/:planeacionId" element={<ProtectedRoute><PlaneacionDocumento /></ProtectedRoute>} />
                 <Route path="/planeacion/:planeacionId/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
                 <Route path="/chat" element={<ProtectedRoute><ChatGeneral /></ProtectedRoute>} />
                 <Route path="/chat/:conversacionId" element={<ProtectedRoute><ChatGeneral /></ProtectedRoute>} />

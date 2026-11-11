@@ -200,7 +200,7 @@ export default function Memorama() {
                                         >
                                             {/* Reverso (boca abajo) */}
                                             <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-cuali-blue text-2xl text-white [backface-visibility:hidden]">
-                                                ❦
+                                                <span className="font-display font-extrabold">c</span>
                                             </div>
                                             {/* Frente (contenido) */}
                                             <div

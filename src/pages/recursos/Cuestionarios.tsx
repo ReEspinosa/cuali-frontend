@@ -280,7 +280,7 @@ export default function Cuestionarios() {
                                                                 esCorrecta ? "font-semibold text-cuali-blue-dark" : "text-ink-soft"
                                                             }`}
                                                         >
-                                                            {String.fromCharCode(97 + j)}) {op} {esCorrecta && "✓"}
+                                                            {String.fromCharCode(97 + j)}) {op} {esCorrecta && "(correcta)"}
                                                         </li>
                                                     );
                                                 })}

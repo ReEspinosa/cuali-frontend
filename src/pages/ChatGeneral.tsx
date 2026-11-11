@@ -1,43 +1,42 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { ArrowUp, Search, SquarePen, BookOpen, Code2, Lightbulb, Image as ImageIcon, BookMarked } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import Sidebar from "../components/Sidebar";
-import { api, getUser } from "../lib/api";
-import AttachmentInput, { AttachmentPreview } from "../components/AttachmentInput";
-import type { Adjunto } from "../lib/api";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Search, SquarePen } from "lucide-react";
+import AvisoFalla, { type EnvioFallido } from "../components/AvisoFalla";
+import Compositor from "../components/Compositor";
+import MensajeBurbuja, { type MensajeChat } from "../components/MensajeBurbuja";
+import PaginaCuaderno from "../components/PaginaCuaderno";
+import { api, getUser, type Adjunto } from "../lib/api";
 
-type Source = { documento: string; campo?: string; pagina?: number };
-type Mensaje = {
-    id: string;
-    role: "user" | "assistant";
-    content: string;
-    sources?: Source[];
-    adjuntos?: Adjunto[];
-};
 type ConversacionResumen = { id: string; titulo: string; updated_at: string };
 
-const ACCIONES_RAPIDAS = [
-    { icon: BookOpen, label: "Aprender" },
-    { icon: Code2, label: "Planear" },
-    { icon: Lightbulb, label: "Consejo" },
-    { icon: ImageIcon, label: "Generar recurso" },
+const SUGERENCIAS = [
+    "¿Qué es un PDA y cómo lo uso en mi planeación?",
+    "Dame una actividad de cierre para fracciones en 6°",
+    "¿Cómo evalúo un proyecto comunitario?",
+    "Ideas para trabajar el eje de inclusión en el aula",
 ];
 
 export default function ChatGeneral() {
     const { conversacionId } = useParams<{ conversacionId?: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     const user = getUser();
 
     const [conversaciones, setConversaciones] = useState<ConversacionResumen[]>([]);
     const [busqueda, setBusqueda] = useState("");
-    const [mensajes, setMensajes] = useState<Mensaje[]>([]);
+    const [mensajes, setMensajes] = useState<MensajeChat[]>([]);
     const [input, setInput] = useState("");
-    const [sending, setSending] = useState(false);
-    const [adjuntosPendientes, setAdjuntosPendientes] = useState<Adjunto[]>([]);
-    const [useRag, setUseRag] = useState(true);
+    const [enviando, setEnviando] = useState(false);
+    const [adjuntos, setAdjuntos] = useState<Adjunto[]>([]);
+    const [usarLibros, setUsarLibros] = useState(true);
+    const [fallo, setFallo] = useState<EnvioFallido | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Id de la conversacion que se acaba de crear en este envio: al cambiar la
+    // URL no se recarga desde el servidor, porque borraria el mensaje que se
+    // esta mostrando mientras llega la respuesta.
+    const recienCreadaRef = useRef<string | null>(null);
+    const mensajeInicialUsadoRef = useRef(false);
 
     useEffect(() => {
         api.listarConversaciones().then(setConversaciones).catch(() => {});
@@ -48,336 +47,182 @@ export default function ChatGeneral() {
             setMensajes([]);
             return;
         }
-        api.obtenerConversacion(conversacionId).then((data) => setMensajes(data.mensajes));
-    }, [conversacionId]);
+        if (recienCreadaRef.current === conversacionId) return;
+        let vigente = true;
+        api.obtenerConversacion(conversacionId)
+            .then((data) => {
+                if (vigente) setMensajes(data.mensajes);
+            })
+            .catch(() => {
+                if (vigente) navigate("/chat", { replace: true });
+            });
+        return () => {
+            vigente = false;
+        };
+    }, [conversacionId, navigate]);
 
     useEffect(() => {
         scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-    }, [mensajes]);
+    }, [mensajes, enviando]);
 
-    const conversacionesFiltradas = conversaciones.filter((c) =>
-        c.titulo.toLowerCase().includes(busqueda.toLowerCase())
-    );
+    async function enviar(textoDirecto?: string, reenvio?: EnvioFallido) {
+        const texto = reenvio ? reenvio.texto : (textoDirecto ?? input).trim();
+        const adjuntosAEnviar = reenvio ? reenvio.adjuntos : adjuntos;
+        if ((!texto && adjuntosAEnviar.length === 0) || enviando) return;
 
-    async function handleSend(textoInicial?: string) {
-        const text = (textoInicial ?? input).trim();
-        if ((!text && adjuntosPendientes.length === 0) || sending) return;
-
-        setInput("");
-        const adjuntosAEnviar = adjuntosPendientes;
-        setAdjuntosPendientes([]);
-        setSending(true);
+        // Un mensaje que fallo antes no quedo guardado en el servidor: se quita
+        // de la vista antes de mandar el siguiente.
+        const idFallido = fallo?.idLocal;
+        setFallo(null);
+        if (!reenvio) {
+            setInput("");
+            setAdjuntos([]);
+        }
+        setEnviando(true);
+        const idLocal = crypto.randomUUID();
+        setMensajes((prev) => [
+            ...prev.filter((m) => m.id !== idFallido),
+            { id: idLocal, role: "user", content: texto, adjuntos: adjuntosAEnviar, local: true },
+        ]);
 
         try {
-            let idActivo: string = conversacionId ?? "";
-            if (!idActivo) {
+            let id = conversacionId ?? "";
+            if (!id) {
                 const nueva = await api.crearConversacion();
-                idActivo = nueva.id;
-                navigate(`/chat/${idActivo}`, { replace: true });
+                id = nueva.id;
+                recienCreadaRef.current = id;
+                navigate(`/chat/${id}`, { replace: true });
             }
-
-            const mensajeLocal: Mensaje = {
-                id: crypto.randomUUID(),
-                role: "user",
-                content: text,
-                adjuntos: adjuntosAEnviar,
-            };
-            setMensajes((prev) => [...prev, mensajeLocal]);
-
-            const respuesta = await api.enviarMensajeConversacion(idActivo, text, adjuntosAEnviar, useRag);
+            const respuesta = await api.enviarMensajeConversacion(id, texto, adjuntosAEnviar, usarLibros);
             setMensajes((prev) => [...prev, respuesta]);
-
-            const listaActualizada = await api.listarConversaciones();
-            setConversaciones(listaActualizada);
+            setConversaciones(await api.listarConversaciones());
         } catch (err) {
-            setMensajes((prev) => [
-                ...prev,
-                {
-                    id: crypto.randomUUID(),
-                    role: "assistant",
-                    content: `Ocurrió un error: ${err instanceof Error ? err.message : "intenta de nuevo"}`,
-                },
-            ]);
+            // No se agrega una "respuesta" falsa: se muestra el aviso con
+            // la opcion de reenviar el mismo mensaje.
+            setFallo({
+                idLocal,
+                texto,
+                adjuntos: adjuntosAEnviar,
+                motivo: err instanceof Error ? err.message : "Cuali no pudo responder. Intenta de nuevo.",
+            });
         } finally {
-            setSending(false);
+            setEnviando(false);
         }
     }
 
+    // Pedido escrito en el inicio: se envia una sola vez al abrir el chat.
+    useEffect(() => {
+        const estado = location.state as { mensajeInicial?: string } | null;
+        if (mensajeInicialUsadoRef.current || conversacionId || !estado?.mensajeInicial) return;
+        mensajeInicialUsadoRef.current = true;
+        enviar(estado.mensajeInicial);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Filtro lineal sobre las conversaciones del usuario: O(n).
+    const q = busqueda.trim().toLowerCase();
+    const filtradas = q ? conversaciones.filter((c) => c.titulo.toLowerCase().includes(q)) : conversaciones;
     const enConversacion = mensajes.length > 0;
 
+    const compositor = (
+        <Compositor
+            valor={input}
+            onCambio={setInput}
+            onEnviar={() => enviar()}
+            adjuntos={adjuntos}
+            onAdjuntos={setAdjuntos}
+            enviando={enviando}
+            placeholder="Pregunta lo que quieras sobre tu clase o la NEM"
+            usarLibros={usarLibros}
+            onUsarLibros={setUsarLibros}
+        />
+    );
+
     return (
-        <div className="fixed inset-0 flex overflow-hidden bg-white font-sans text-ink">
-            <Sidebar />
+        <PaginaCuaderno sinScroll>
+            <div className="flex min-h-0 flex-1">
+                <aside className="relative z-10 hidden w-64 flex-shrink-0 flex-col gap-3 border-r border-borde bg-white px-3 py-5 md:flex">
+                    <Link
+                        to="/chat"
+                        className="flex h-10 items-center justify-center gap-2 rounded-md border-[1.5px] border-tinta text-sm font-bold transition hover:bg-relleno"
+                    >
+                        <SquarePen size={16} aria-hidden="true" />
+                        Nueva conversación
+                    </Link>
+                    <label className="flex h-9 items-center gap-2 rounded-md border border-borde bg-papel px-2.5 text-tinta-tenue">
+                        <Search size={15} aria-hidden="true" />
+                        <span className="sr-only">Buscar conversaciones</span>
+                        <input
+                            value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)}
+                            placeholder="Buscar"
+                            className="min-w-0 flex-1 bg-transparent text-sm text-tinta outline-none"
+                        />
+                    </label>
+                    <p className="px-1 pt-2 text-xs font-bold uppercase tracking-[0.08em] text-tinta-tenue">Conversaciones</p>
+                    <nav aria-label="Conversaciones" className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
+                        {filtradas.map((c) => (
+                            <Link
+                                key={c.id}
+                                to={`/chat/${c.id}`}
+                                aria-current={c.id === conversacionId ? "page" : undefined}
+                                className={`truncate rounded-md px-2.5 py-2 text-sm transition ${
+                                    c.id === conversacionId ? "bg-marcatexto-suave font-bold" : "text-tinta-suave hover:bg-relleno"
+                                }`}
+                            >
+                                {c.titulo}
+                            </Link>
+                        ))}
+                        {filtradas.length === 0 && <p className="px-2.5 text-sm text-tinta-tenue">Sin conversaciones todavía.</p>}
+                    </nav>
+                </aside>
 
-            {/* Panel de conversaciones — como el sidebar de Discourse */}
-            <div className="flex w-72 flex-shrink-0 flex-col border-r border-black/5 bg-linen/40 px-4 py-6">
-                <button
-                    onClick={() => navigate("/chat")}
-                    className="mb-4 flex items-center justify-center gap-2 rounded-xl bg-cuali-blue-soft py-2.5 text-sm font-medium text-ink transition hover:bg-cuali-blue-light"
-                >
-                    <SquarePen size={15} />
-                    Nuevo chat
-                </button>
-
-                <div className="mb-4 flex items-center gap-2 rounded-xl bg-cuali-blue-soft/60 px-3 py-2">
-                    <Search size={14} className="text-ink-soft" />
-                    <input
-                        value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
-                        placeholder="Buscar conversaciones…"
-                        className="w-full bg-transparent text-sm outline-none placeholder:text-ink-soft"
-                    />
-                </div>
-
-                <p className="mb-2 px-1 text-xs font-medium uppercase tracking-wide text-ink-soft">Conversaciones</p>
-                <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
-                    {conversacionesFiltradas.map((c) => (
-                        <button
-                            key={c.id}
-                            onClick={() => navigate(`/chat/${c.id}`)}
-                            className={`truncate rounded-lg px-3 py-2 text-left text-sm transition ${
-                                c.id === conversacionId
-                                    ? "bg-cuali-blue-soft font-medium text-ink"
-                                    : "text-ink-soft hover:bg-cuali-blue-soft/50"
-                            }`}
-                        >
-                            {c.titulo}
-                        </button>
-                    ))}
-                    {conversacionesFiltradas.length === 0 && (
-                        <p className="px-3 text-sm text-ink-soft">Sin conversaciones todavía.</p>
-                    )}
-                </div>
-            </div>
-
-            {/* Área principal */}
-            <div className="relative flex flex-1 flex-col overflow-hidden">
-                <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-                    <div className="content-blob content-blob-1" />
-                    <div className="content-blob content-blob-2" />
-                    <div className="content-blob content-blob-3" />
-                    <div className="content-blob content-blob-4" />
-                    <div className="content-blob content-blob-5" />
-                    <div className="content-blob content-blob-6" />
-                    <div className="content-blob content-blob-7" />
-                    <div className="content-blob content-blob-8" />
-                    <div className="content-blob content-blob-9" />
-                </div>
-
-                {!enConversacion ? (
-                    // Estado inicial — greeting + input centrado, como en Discourse
-                    <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-10">
-                        <h1 className="mb-2 text-center font-serif text-4xl font-normal leading-tight text-ink">
-                            Hola, <span className="italic text-cuali-blue-dark">{user?.nombre ?? "docente"}</span>
-                        </h1>
-                        <p className="mb-10 text-center font-serif text-3xl font-normal text-ink/70">
-                            ¿En qué te ayudo hoy?
-                        </p>
-
-                        <div className="w-full max-w-2xl">
-                            <AttachmentPreview adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
-                            <div className="flex items-end gap-3 rounded-3xl border border-cuali-blue-light/50 bg-cuali-blue-soft/70 px-6 py-4 shadow-lg backdrop-blur-xl">
-                                <AttachmentInput adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
-                                <button
-                                    type="button"
-                                    onClick={() => setUseRag(!useRag)}
-                                    title={useRag ? "RAG activado (usando libros SEP)" : "RAG desactivado (respuesta general)"}
-                                    className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition ${
-                                        useRag
-                                            ? "bg-cuali-blue-dark text-white"
-                                            : "bg-black/5 text-ink-soft hover:bg-black/10"
-                                    }`}
-                                >
-                                    <BookMarked size={16} />
-                                </button>
-
-                                <textarea
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter" && !e.shiftKey) {
-                                            e.preventDefault();
-                                            handleSend();
-                                        }
-                                    }}
-                                    placeholder="Pregunta lo que sea…"
-                                    rows={1}
-                                    style={{ maxHeight: "200px" }}
-                                    onInput={(e) => {
-                                        const el = e.currentTarget;
-                                        el.style.height = "auto";
-                                        el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
-                                    }}
-                                    className="flex-1 resize-none bg-transparent py-1.5 text-sm text-ink outline-none placeholder:text-ink-soft"
-                                />
-                                <button
-                                    onClick={() => handleSend()}
-                                    disabled={(!input.trim() && adjuntosPendientes.length === 0) || sending}
-                                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center self-end rounded-full bg-cuali-blue-dark text-white transition disabled:opacity-40"
-                                >
-                                    <ArrowUp size={16} />
-                                </button>
-                            </div>
-
-                            <div className="mt-4 flex flex-wrap justify-center gap-2">
-                                {ACCIONES_RAPIDAS.map((a) => {
-                                    const Icon = a.icon;
-                                    return (
+                <div className="relative flex min-w-0 flex-1 flex-col">
+                    {!enConversacion ? (
+                        <div className="flex flex-1 flex-col justify-center overflow-y-auto py-10 pl-16 pr-6 md:pl-24 md:pr-12">
+                            <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+                                <h1 className="text-balance font-display text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">
+                                    Hola{user?.nombre ? `, ${user.nombre}` : ""}. ¿En qué te <span className="marcatexto">ayudo</span>?
+                                </h1>
+                                {compositor}
+                                <div className="flex flex-wrap gap-2">
+                                    {SUGERENCIAS.map((s) => (
                                         <button
-                                            key={a.label}
-                                            className="flex items-center gap-2 rounded-full border border-black/5 bg-white px-4 py-2 text-sm text-ink-soft shadow-sm transition hover:text-ink"
+                                            key={s}
+                                            type="button"
+                                            onClick={() => setInput(s)}
+                                            className="rounded-full border border-borde-fuerte bg-white px-3.5 py-2 text-left text-sm transition hover:border-tinta"
                                         >
-                                            <Icon size={14} />
-                                            {a.label}
+                                            {s}
                                         </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        <div ref={scrollRef} className="relative z-10 min-h-0 flex-1 overflow-y-auto px-10 py-8">
-                            <div className="mx-auto flex max-w-3xl flex-col gap-5">
-                                {mensajes.map((m) => (
-                                    <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                                        <div className="max-w-[75%]">
-                                            <div
-                                                className={`rounded-2xl px-5 py-3 text-sm leading-relaxed ${
-                                                    m.role === "assistant" ? "" : "whitespace-pre-wrap"
-                                                } ${
-                                                    m.role === "user"
-                                                        ? "bg-cuali-blue text-linen"
-                                                        : "border border-black/5 bg-white text-ink shadow-sm"
-                                                }`}
-                                            >
-                                                {m.adjuntos && m.adjuntos.length > 0 && (
-                                                    <div className="mb-2 flex flex-wrap gap-2">
-                                                        {m.adjuntos.map((a, i) =>
-                                                                a.tipo === "imagen" ? (
-                                                                    <img
-                                                                        key={i}
-                                                                        src={`http://localhost:8000${a.url}`}
-                                                                        alt={a.filename}
-                                                                        className="h-24 w-24 rounded-lg object-cover"
-                                                                    />
-                                                                ) : (
-                                                                    <span key={i} className="rounded-lg bg-black/10 px-2 py-1 text-xs">
-                                  {a.filename}
-                                </span>
-                                                                )
-                                                        )}
-                                                    </div>
-                                                )}
-                                                {m.role === "assistant" ? (
-                                                    <div className="chat-markdown">
-                                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
-                                                    </div>
-                                                ) : (
-                                                    m.content
-                                                )}
-                                            </div>
-
-                                            {m.sources && m.sources.length > 0 && (
-                                                <div className="mt-2 flex flex-wrap gap-2">
-                                                    {m.sources.map((s, i) => (
-                                                        <span
-                                                            key={i}
-                                                            className="rounded-full border border-cuali-blue-light/50 bg-cuali-blue-soft px-3 py-1 text-xs text-cuali-blue-dark"
-                                                            title={s.campo ?? ""}
-                                                        >
-                              {s.documento}
-                                                            {s.pagina ? ` · pág. ${s.pagina}` : ""}
-                            </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {sending && (
-                                    <div className="flex justify-start">
-                                        <div className="rounded-2xl border border-black/5 bg-white px-5 py-3 text-sm text-ink-soft shadow-sm">
-                                            Cuali está escribiendo…
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="relative z-10 px-10 pb-8">
-                            <div className="mx-auto max-w-3xl">
-                                <AttachmentPreview adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
-                                <div className="flex items-end gap-3 rounded-3xl border border-cuali-blue-light/50 bg-cuali-blue-soft/70 px-6 py-4 shadow-lg backdrop-blur-xl">
-                                    <AttachmentInput adjuntos={adjuntosPendientes} onChange={setAdjuntosPendientes} />
-                                    <button
-                                        type="button"
-                                        onClick={() => setUseRag(!useRag)}
-                                        title={useRag ? "RAG activado (usando libros SEP)" : "RAG desactivado (respuesta general)"}
-                                        className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition ${
-                                            useRag
-                                                ? "bg-cuali-blue-dark text-white"
-                                                : "bg-black/5 text-ink-soft hover:bg-black/10"
-                                        }`}
-                                    >
-                                        <BookMarked size={16} />
-                                    </button>
-                                    <textarea
-                                        value={input}
-                                        onChange={(e) => setInput(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter" && !e.shiftKey) {
-                                                e.preventDefault();
-                                                handleSend();
-                                            }
-                                        }}
-                                        placeholder="Escribe tu mensaje…"
-                                        rows={1}
-                                        style={{ maxHeight: "200px" }}
-                                        onInput={(e) => {
-                                            const el = e.currentTarget;
-                                            el.style.height = "auto";
-                                            el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
-                                        }}
-                                        className="flex-1 resize-none bg-transparent py-1.5 text-sm text-ink outline-none placeholder:text-ink-soft"
-                                    />
-                                    <button
-                                        onClick={() => handleSend()}
-                                        disabled={(!input.trim() && adjuntosPendientes.length === 0) || sending}
-                                        className="flex h-9 w-9 flex-shrink-0 items-center justify-center self-end rounded-full bg-cuali-blue-dark text-white transition disabled:opacity-40"
-                                    >
-                                        <ArrowUp size={16} />
-                                    </button>
+                                    ))}
                                 </div>
                             </div>
                         </div>
-                    </>
-                )}
-
-                <style>{`
-          .content-blob { position: absolute; border-radius: 9999px; filter: blur(60px); }
-          .content-blob-1 { width: 400px; height: 400px; top: -120px; right: -60px; background: var(--blue); opacity: 0.45; }
-          .content-blob-2 { width: 320px; height: 320px; top: 22%; right: 8%; background: var(--blue-light); opacity: 0.85; }
-          .content-blob-3 { width: 360px; height: 360px; bottom: -100px; left: 4%; background: var(--blue); opacity: 0.4; }
-          .content-blob-4 { width: 280px; height: 280px; top: 50%; left: -60px; background: var(--blue-light); opacity: 0.8; }
-          .content-blob-5 { width: 320px; height: 320px; bottom: 6%; right: -80px; background: var(--blue); opacity: 0.4; }
-          .content-blob-6 { width: 250px; height: 250px; top: 8%; left: 20%; background: var(--blue-light); opacity: 0.75; }
-          .content-blob-7 { width: 260px; height: 260px; bottom: 28%; left: 42%; background: var(--blue-light); opacity: 0.7; }
-          .content-blob-8 { width: 220px; height: 220px; top: 38%; right: 30%; background: var(--blue); opacity: 0.3; }
-          .content-blob-9 { width: 240px; height: 240px; bottom: 45%; left: 15%; background: var(--blue-light); opacity: 0.65; }
-
-          .chat-markdown p { margin: 0 0 0.6em 0; }
-          .chat-markdown p:last-child { margin-bottom: 0; }
-          .chat-markdown ul, .chat-markdown ol { margin: 0.4em 0 0.6em 1.2em; padding: 0; }
-          .chat-markdown li { margin-bottom: 0.25em; }
-          .chat-markdown strong { font-weight: 600; }
-          .chat-markdown table { border-collapse: collapse; margin: 0.6em 0; width: 100%; font-size: 0.85em; }
-          .chat-markdown th, .chat-markdown td { border: 1px solid rgba(0,0,0,0.15); padding: 6px 8px; text-align: left; vertical-align: top; }
-          .chat-markdown th { background: rgba(60,95,145,0.10); font-weight: 600; }
-          .chat-markdown h1, .chat-markdown h2, .chat-markdown h3 { font-size: 1em; font-weight: 600; margin: 0.6em 0 0.3em 0; }
-        `}</style>
+                    ) : (
+                        <>
+                            <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto py-8 pl-16 pr-6 md:pl-24 md:pr-12">
+                                <div className="mx-auto flex max-w-3xl flex-col gap-5" aria-live="polite">
+                                    {mensajes.map((m) => (
+                                        <MensajeBurbuja key={m.id} mensaje={m} objetivoTipo="chat_mensaje" />
+                                    ))}
+                                    {enviando && (
+                                        <p className="self-start rounded-lg border border-borde bg-white px-4 py-3 text-sm text-tinta-tenue">
+                                            Cuali está escribiendo...
+                                        </p>
+                                    )}
+                                    {fallo && !enviando && (
+                                        <AvisoFalla fallo={fallo} onReintentar={() => enviar(undefined, fallo)} deshabilitado={enviando} />
+                                    )}
+                                </div>
+                            </div>
+                            <div className="pb-6 pl-16 pr-6 md:pl-24 md:pr-12">
+                                <div className="mx-auto max-w-3xl">{compositor}</div>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
-        </div>
+        </PaginaCuaderno>
     );
 }

@@ -23,7 +23,9 @@ function ModalCrearPublicacion({
     const [contenido, setContenido] = useState("");
     const [categoria, setCategoria] = useState<string | null>(null);
     const [visibilidad, setVisibilidad] = useState<"publico" | "escuela">("publico");
-    const [imagenes, setImagenes] = useState<string[]>([]);
+    // url: la que se guarda en la publicacion; vista: URL firmada temporal
+    // solo para la vista previa (la imagen aun es privada hasta publicar).
+    const [imagenes, setImagenes] = useState<{ url: string; vista: string }[]>([]);
     const [subiendo, setSubiendo] = useState(false);
     const [publicando, setPublicando] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -36,7 +38,7 @@ function ModalCrearPublicacion({
             const subidas = await Promise.all(
                 Array.from(files).map(async (f) => {
                     const r = await api.subirArchivo(f);
-                    return r.url;
+                    return { url: r.url, vista: r.url_firmada ?? r.url };
                 })
             );
             setImagenes((prev) => [...prev, ...subidas]);
@@ -59,7 +61,7 @@ function ModalCrearPublicacion({
                 contenido: contenido.trim(),
                 categoria,
                 visibilidad,
-                imagenes,
+                imagenes: imagenes.map((i) => i.url),
             });
             onCreada(pub);
             onClose();
@@ -93,9 +95,9 @@ function ModalCrearPublicacion({
 
                 {imagenes.length > 0 && (
                     <div className="mb-4 flex flex-wrap gap-2">
-                        {imagenes.map((url, i) => (
+                        {imagenes.map((img, i) => (
                             <div key={i} className="relative h-16 w-16">
-                                <img src={`${API_BASE}${url}`} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                                <img src={`${API_BASE}${img.vista}`} alt="" className="h-16 w-16 rounded-lg object-cover" />
                                 <button
                                     onClick={() => setImagenes((prev) => prev.filter((_, j) => j !== i))}
                                     className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-white"

@@ -32,7 +32,7 @@ export default function ForgotPassword() {
                     restablecer tu contraseña. El link expira en 2 horas.
                 </p>
                 <Link to="/login" className="text-sm font-semibold text-ink hover:underline">
-                    ← Volver a iniciar sesión
+                    Volver a iniciar sesión
                 </Link>
             </AuthLayout>
         );
@@ -71,7 +71,7 @@ export default function ForgotPassword() {
 
             <p className="mt-8 text-center text-sm text-ink-soft">
                 <Link to="/login" className="font-semibold text-ink hover:underline">
-                    ← Volver a iniciar sesión
+                    Volver a iniciar sesión
                 </Link>
             </p>
         </AuthLayout>

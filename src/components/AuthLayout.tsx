@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ArrowUp } from "lucide-react";
+import Logo from "./Logo";
 
 function TypewriterBubble() {
     const fullText = "Ayúdame a planear mi próxima clase";
@@ -60,8 +61,7 @@ export default function AuthLayout({ children, formMaxWidth = "max-w-[380px]" }:
                 </div>
 
                 <div className="relative z-10 flex items-center gap-2">
-                    <span className="text-xl text-cuali-blue">❦</span>
-                    <span className="font-serif text-2xl font-semibold text-ink">Cuali</span>
+                    <Logo className="text-3xl" />
                 </div>
 
                 <div className="relative z-10 flex flex-1 items-center">

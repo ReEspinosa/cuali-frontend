@@ -1,51 +1,191 @@
 @import "tailwindcss";
 
-/* Cuali.ai — Design tokens
-   Paleta base: linen cálido + acento azul ("azulito").
-   Sage/lavender se usan solo en el blob de fondo tipo liquid glass. */
+/* =========================================================================
+   Cuali - sistema de diseno "cuaderno"
+
+   Idea: la app se siente como el cuaderno de cuadricula de un docente.
+   - Hoja con cuadricula azul muy tenue y margen rojo.
+   - Tinta azul para texto y acciones; un solo color de accion.
+   - Amarillo marcatexto para resaltar.
+   - Cada campo formativo tiene su color, usado como "separador".
+
+   Los nombres de token antiguos (linen, ink, cuali-blue...) se conservan y
+   ahora apuntan a la paleta nueva. Asi, las pantallas que aun no se
+   rediseñan (recursos, juegos, auth) adoptan los colores sin tocarlas.
+   ========================================================================= */
 
 :root {
-  --linen: #F7F1E6;
-  --linen-deep: #EDE3CD;
-  --ink: #2B2A24;
-  --ink-soft: #6B6558;
+  /* Tinta y papel */
+  --tinta: #1B2A6B;
+  --tinta-fuerte: #0E1847;
+  --tinta-suave: #4A5470;
+  --tinta-tenue: #5A6378;
+  --papel: #FBFCFE;
+  --blanco: #FFFFFF;
+  --cuadricula: #E6ECF6;
+  --borde: #CED8E8;
+  --borde-fuerte: #B9C5DA;
+  --relleno: #EEF2FA;
+  --margen: #D4574B;
 
-  --blue: #4E7AB5;
-  --blue-dark: #3C5F91;
-  --blue-light: #A9C4E0;
-  --blue-soft: #E7EEF7;
+  /* Marcatexto */
+  --marcatexto: #F6D44A;
+  --marcatexto-suave: #FFF4C7;
+  --marcatexto-texto: #6B5310;
 
-  --sage: #8FA383;
-  --lavender: #9B8FC7;
+  /* Campos formativos: color solido (texto blanco encima, contraste AA)
+     y tinte claro para fondos. */
+  --campo-lenguajes: #C2471B;
+  --campo-lenguajes-tinte: #FBEAE3;
+  --campo-saberes: #1D5BB8;
+  --campo-saberes-tinte: #E4EDFA;
+  --campo-etica: #1E7048;
+  --campo-etica-tinte: #EEF7F1;
+  --campo-comunitario: #9E2A64;
+  --campo-comunitario-tinte: #F7E3EC;
+
+  /* Estados */
+  --error: #B42318;
+  --error-tinte: #FDECEA;
+
+  /* Alias de los tokens anteriores */
+  --linen: var(--papel);
+  --linen-deep: var(--borde);
+  --ink: var(--tinta);
+  --ink-soft: var(--tinta-tenue);
+  --blue: var(--tinta);
+  --blue-dark: var(--tinta-fuerte);
+  --blue-light: var(--borde);
+  --blue-soft: var(--relleno);
+  --sage: var(--campo-etica-tinte);
+  --lavender: var(--relleno);
 }
 
 @theme inline {
+  --color-tinta: var(--tinta);
+  --color-tinta-fuerte: var(--tinta-fuerte);
+  --color-tinta-suave: var(--tinta-suave);
+  --color-tinta-tenue: var(--tinta-tenue);
+  --color-papel: var(--papel);
+  --color-cuadricula: var(--cuadricula);
+  --color-borde: var(--borde);
+  --color-borde-fuerte: var(--borde-fuerte);
+  --color-relleno: var(--relleno);
+  --color-margen: var(--margen);
+  --color-marcatexto: var(--marcatexto);
+  --color-marcatexto-suave: var(--marcatexto-suave);
+  --color-marcatexto-texto: var(--marcatexto-texto);
+  --color-error: var(--error);
+  --color-error-tinte: var(--error-tinte);
+
+  --color-lenguajes: var(--campo-lenguajes);
+  --color-lenguajes-tinte: var(--campo-lenguajes-tinte);
+  --color-saberes: var(--campo-saberes);
+  --color-saberes-tinte: var(--campo-saberes-tinte);
+  --color-etica: var(--campo-etica);
+  --color-etica-tinte: var(--campo-etica-tinte);
+  --color-comunitario: var(--campo-comunitario);
+  --color-comunitario-tinte: var(--campo-comunitario-tinte);
+
   --color-linen: var(--linen);
   --color-linen-deep: var(--linen-deep);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
-
   --color-cuali-blue: var(--blue);
   --color-cuali-blue-dark: var(--blue-dark);
   --color-cuali-blue-light: var(--blue-light);
   --color-cuali-blue-soft: var(--blue-soft);
-
   --color-sage: var(--sage);
   --color-lavender: var(--lavender);
 
-  --font-serif: "Literata", serif;
-  --font-sans: "Plus Jakarta Sans", sans-serif;
+  /* Titulos con caracter; cuerpo con una fuente pensada para lectura
+     facil (Atkinson Hyperlegible, del Braille Institute). */
+  --font-serif: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
 }
 
 body {
-  background: var(--linen);
-  color: var(--ink);
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--font-sans);
 }
 
-/* Estilos para las respuestas de Cuali renderizadas con Markdown (ReactMarkdown).
-   Sin esto, el navegador usa sus márgenes por default en headings/párrafos/listas,
-   que son muy generosos y dejan demasiado espacio en blanco dentro de una burbuja
-   de chat angosta. */
+/* Foco visible para quien navega con teclado. */
+:focus-visible {
+  outline: 2px solid var(--tinta);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------- hoja */
+
+/* Hoja de cuadricula con margen rojo. Se usa en el area principal. */
+.hoja-cuaderno {
+  position: relative;
+  background-color: var(--papel);
+  background-image:
+    linear-gradient(var(--cuadricula) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.hoja-cuaderno::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 40px;
+  width: 2px;
+  background: var(--margen);
+  opacity: 0.55;
+  pointer-events: none;
+}
+@media (min-width: 768px) {
+  .hoja-cuaderno::before { left: 64px; }
+}
+
+/* Subrayado de marcatexto para una palabra del titulo. */
+.marcatexto {
+  background: linear-gradient(transparent 56%, var(--marcatexto) 56%, var(--marcatexto) 90%, transparent 90%);
+  padding: 0 0.08em;
+}
+
+/* Sombra dura, como una tarjeta recortada y pegada en el cuaderno. */
+.sombra-recorte {
+  box-shadow: 4px 4px 0 var(--tinta);
+}
+.sombra-recorte-sm {
+  box-shadow: 3px 3px 0 var(--tinta);
+}
+
+/* Titulo condensado en mayusculas (Bricolage tiene eje de ancho). */
+.titulo-condensado {
+  font-family: var(--font-display);
+  font-stretch: 75%;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+/* Los "blobs" difuminados del diseno anterior se apagan en toda la app. */
+.content-blob,
+.bg-blob,
+.glass-blob,
+.card-blob,
+.sidebar-blob {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ------------------------------------------------- respuestas en Markdown */
+
 .chat-markdown h1,
 .chat-markdown h2,
 .chat-markdown h3,
@@ -53,55 +193,53 @@ body {
 .chat-markdown h5,
 .chat-markdown h6 {
   margin: 0.9em 0 0.35em 0;
-  font-size: 1rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--tinta);
 }
-
 .chat-markdown h1:first-child,
 .chat-markdown h2:first-child,
 .chat-markdown h3:first-child,
 .chat-markdown h4:first-child {
   margin-top: 0;
 }
-
 .chat-markdown p {
-  margin: 0 0 0.4em 0;
-  line-height: 1.45;
+  margin: 0 0 0.6em 0;
+  line-height: 1.6;
 }
-
 .chat-markdown p:last-child {
   margin-bottom: 0;
 }
-
 .chat-markdown ul,
 .chat-markdown ol {
   margin: 0.3em 0 0.6em 0;
   padding-left: 1.3em;
 }
-
+.chat-markdown ul { list-style: disc; }
+.chat-markdown ol { list-style: decimal; }
 .chat-markdown li {
-  margin-bottom: 0.25em;
-  line-height: 1.45;
+  margin-bottom: 0.3em;
+  line-height: 1.55;
 }
-
-.chat-markdown li > ul,
-.chat-markdown li > ol {
-  margin-top: 0.25em;
-  margin-bottom: 0.25em;
-}
-
 .chat-markdown strong {
-  color: var(--ink);
+  font-weight: 700;
+  color: var(--tinta);
 }
-
 .chat-markdown table {
-  margin: 0.5em 0;
+  margin: 0.6em 0;
+  width: 100%;
   border-collapse: collapse;
+  font-size: 0.9em;
 }
-
 .chat-markdown th,
 .chat-markdown td {
-  padding: 0.4em 0.6em;
-  border: 1px solid var(--linen-deep);
+  padding: 0.45em 0.6em;
+  border: 1px solid var(--borde);
+  text-align: left;
+  vertical-align: top;
+}
+.chat-markdown th {
+  background: var(--relleno);
+  font-weight: 700;
 }
